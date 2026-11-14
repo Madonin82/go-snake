@@ -11,6 +11,7 @@ interface LobbyViewProps {
   onStartLocal2P: () => void;
   onStartHotseat: () => void;
   onStartLocal2PBridge?: () => void;
+  onStartHotseatBridge?: () => void;
   isAdmin?: boolean;
   onCreateOnlineRoom: (customLevel?: CampaignLevel | null) => void;
   onCreateServerRoom: (customLevel?: CampaignLevel | null) => void;
@@ -43,6 +44,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
   onStartLocal2P,
   onStartHotseat,
   onStartLocal2PBridge,
+  onStartHotseatBridge,
   isAdmin = false,
   onCreateOnlineRoom,
   onCreateServerRoom,
@@ -93,12 +95,9 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
   };
 
   const launchVersusMode = () => {
-    if (versusMode === 'hotseat_ai') {
-      soundEngine.playDenied();
-      return;
-    }
     soundEngine.playMenuSelect();
     if (versusMode === 'hotseat') onStartHotseat();
+    else if (versusMode === 'hotseat_ai') onStartHotseatBridge?.();
     else if (versusMode === 'simultaneous_ai') onStartLocal2PBridge?.();
     else onStartLocal2P();
   };
@@ -418,6 +417,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
     onStartLocal2P,
     onStartHotseat,
     onStartLocal2PBridge,
+    onStartHotseatBridge,
     onRegisterHandler,
   ]);
 
@@ -809,8 +809,8 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                 </div>
               ) : versusMode === 'hotseat_ai' ? (
                 <div className="col-span-2">
-                  <span className="font-bold text-[#0F380F]">HOTSEAT vs AI (COMING SOON):</span>
-                  <div>Hotseat AI bridge is pending hotseat fixes and is not playable yet.</div>
+                  <span className="font-bold text-[#0F380F]">HOTSEAT vs AI:</span>
+                  <div>P1 plans on this device; P2 is driven by the RTDB AI bridge with moves hidden.</div>
                 </div>
               ) : versusMode === 'simultaneous_ai' ? (
                 <>
@@ -860,7 +860,6 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
             <button
               type="button"
               onClick={launchVersusMode}
-              disabled={versusMode === 'hotseat_ai'}
               onMouseEnter={() => setFocusIndex(4)}
               className={`w-full py-3 [@media(max-height:500px)]:py-2 mt-1 [@media(max-height:500px)]:mt-0.5 border-2 border-[#0F380F] font-black text-sm [@media(max-height:500px)]:text-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[3px_3px_0px_#0F380F] ${
                 currentItem === 'START_VERSUS'

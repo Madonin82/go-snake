@@ -21,6 +21,13 @@ import { buildAIPlan, calculateAIAction, calculateAIMove, imminentStepLosingReac
 import type { ChainIntent } from './game/ai';
 import { cloneGameState, toCompactGameState } from './game/aiBridge';
 import { shouldApplyRtdbBridgeCommand } from './game/aiBridgeRtdb';
+import {
+  ensureNonEmptyHotseatTimeoutBuffer,
+  HotseatReplayBacklog,
+  HotseatSeat,
+  resolveHotseatAfterRound,
+  resolveHotseatPostLock,
+} from './game/hotseat';
 import { computeVirtualHead, findBfsPath, findFallbackBfsPath, resolveDominantDirection } from './game/mousePathfinding';
 import { gamepadController, GamepadMenuAction } from './game/gamepad';
 import { generateBridgeSecret, networkManager } from './game/network';
@@ -503,6 +510,8 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
   const [localBridgeSecret, setLocalBridgeSecret] = useState<string | null>(null);
   const [localBridgeReadyPending, setLocalBridgeReadyPending] = useState<boolean>(false);
   const [localBridgeArming, setLocalBridgeArming] = useState<boolean>(false);
+  const [localBridgeTargetMode, setLocalBridgeTargetMode] = useState<'LOCAL_2P' | 'LOCAL_HOTSEAT'>('LOCAL_2P');
+  const localBridgeTargetModeRef = useRef<'LOCAL_2P' | 'LOCAL_HOTSEAT'>('LOCAL_2P');
   const [localRoomCopied, setLocalRoomCopied] = useState<boolean>(false);
   const [localSecretCopied, setLocalSecretCopied] = useState<boolean>(false);
   const [customOnlineLevel, setCustomOnlineLevel] = useState<CampaignLevel | null>(null);
@@ -697,22 +706,62 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
   // Timer for the hotseat round playback chain (P2's viewing). Separate
   // from the live chain's step timer; quit clears both.
   const hotseatReplayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Hotseat simultaneous-resolution (v2): a round replay owed to one seat.
+  // Hotseat simultaneous-resolution: a round replay owed to one seat.
   // Set when a live round resolves (the seat that did not trigger it still
-  // has to watch it); consumed at that seat's unlock, which plays it back
-  // visual-only from matchHistory. Null when no replay is owed.
-  const hotseatReplayRef = useRef<{ seat: 'p1' | 'p2'; startIdx: number } | null>(null);
+  // has to watch it); preserved across consecutive short turns while that seat
+  // stays locked, and consumed at unlock via playHotseatRoundReplay.
+  const hotseatReplayRef = useRef<HotseatReplayBacklog | null>(null);
+  // Set when the active human hotseat seat has an unviewed replay backlog
+  // waiting behind an Unlock (and optional PIN) gate.
+  const [hotseatAwaitingUnlock, setHotseatAwaitingUnlock] = useState<HotseatSeat | null>(null);
+  const hotseatAwaitingUnlockRef = useRef<HotseatSeat | null>(null);
+  hotseatAwaitingUnlockRef.current = hotseatAwaitingUnlock;
+  // Set after a live Hotseat round resolves and needs a handoff, keeping final
+  // board positions visible until the player confirms Turn Done.
+  const [hotseatTurnDoneTo, setHotseatTurnDoneTo] = useState<HotseatSeat | null>(null);
+  const hotseatTurnDoneToRef = useRef<HotseatSeat | null>(null);
+  hotseatTurnDoneToRef.current = hotseatTurnDoneTo;
+  const executeHotseatRoundRef = useRef<(triggerSeat: HotseatSeat) => void>(() => {});
 
-  // After a hotseat lock lands: first lock → PIN setup pad; otherwise → pass screen.
-  const hotseatAfterLock = useCallback((seat: 'p1' | 'p2') => {
-    if (hotseatPinsRef.current[seat] === undefined) {
+  const handleHotseatConfirmTurnDone = useCallback(() => {
+    const next = hotseatTurnDoneToRef.current;
+    if (!next) return;
+    soundEngine.playMenuSelect();
+    hotseatTurnDoneToRef.current = null;
+    setHotseatTurnDoneTo(null);
+    setHotseatPassTo(next);
+  }, []);
+
+  const finishHotseatLock = useCallback((
+    seat: HotseatSeat,
+    pinsOverride?: Record<string, string | undefined>,
+  ) => {
+    const aliveSeats = stateRef.current.snakes
+      .filter(s => s.isAlive)
+      .map(s => s.id as HotseatSeat);
+    const decision = resolveHotseatPostLock({
+      seat,
+      pins: pinsOverride ?? hotseatPinsRef.current,
+      locks: locksRef.current,
+      aliveSeats,
+      aiBridgeActive: localBridgeArmedRef.current,
+    });
+    if (decision.action === 'PROMPT_PIN_SET') {
       setHotseatPinInput('');
       setHotseatPinError(null);
-      setHotseatPinPad({ mode: 'set', seat });
-    } else {
-      setHotseatPassTo(seat === 'p1' ? 'p2' : 'p1');
+      setHotseatPinPad({ mode: 'set', seat: decision.seat });
+    } else if (decision.action === 'EXECUTE_ROUND') {
+      executeHotseatRoundRef.current(decision.triggerSeat);
+    } else if (decision.action === 'PASS_TO') {
+      setHotseatPassTo(decision.nextSeat);
     }
   }, []);
+
+  // After a hotseat lock lands: PIN setup (first lock in human hotseat), then
+  // immediately resolve if both seats are locked or pass to the unlocked seat.
+  const hotseatAfterLock = useCallback((seat: HotseatSeat) => {
+    finishHotseatLock(seat);
+  }, [finishHotseatLock]);
 
   // Close the in-game menu (and controls-only modal) if the hotseat pass screen
   // or PIN pad opens (e.g. when the think timer auto-locks behind the menu).
@@ -727,14 +776,17 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
   }, [hotseatPassTo, hotseatPinPad, menuControlsOnly]);
 
   // Hotseat input gate: only the active player's inputs count, and none
-  // count while the pass screen, PIN pad, or move playback is up.
-  // Reads refs only, so it never goes stale inside useCallbacks.
-  const hotseatBlocksInput = (targetKey: string): boolean => {
+  // count while the pass screen, PIN pad, unlock replay gate, or playback is up.
+  // RTDB bridge commands for P2 in Hotseat vs AI bypass the human seat gate.
+  const hotseatBlocksInput = (targetKey: string, isBridgeCommand = false): boolean => {
     if (playModeRef.current !== 'LOCAL_HOTSEAT') return false;
+    if (isBridgeCommand && localBridgeArmedRef.current && targetKey === 'p2') return false;
     if (targetKey !== hotseatActiveSeatRef.current) return true;
     if (hotseatPassToRef.current !== null) return true;
     if (hotseatExecutingRef.current) return true;
     if (hotseatPinPadRef.current !== null) return true;
+    if (hotseatAwaitingUnlockRef.current !== null) return true;
+    if (hotseatTurnDoneToRef.current !== null) return true;
     return false;
   };
 
@@ -1017,9 +1069,16 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
       isBuiltInAiActive(),
     );
     // Hotseat: only the active player gets a planning session (think
-    // timer). The inactive player's timer stays stopped.
+    // timer), and only once pass/PIN/replay gates are clear.
     const filtered = mode === 'LOCAL_HOTSEAT'
-      ? events.filter(event => event.player === hotseatActiveSeatRef.current)
+      ? events.filter(event =>
+          event.player === hotseatActiveSeatRef.current &&
+          hotseatPassToRef.current === null &&
+          hotseatPinPadRef.current === null &&
+          hotseatAwaitingUnlockRef.current !== event.player &&
+          hotseatTurnDoneToRef.current === null &&
+          !hotseatExecutingRef.current
+        )
       : events;
     for (const event of filtered) applyThinkTransition(event);
   }, [applyThinkTransition, isBuiltInAiActive]);
@@ -1061,6 +1120,17 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
         if (event.type === 'PLANNING_ENTERED') {
           const state = stateRef.current;
           if (state.phase === 'OVER' || !state.snakes.find(snake => snake.id === event.player)?.isAlive) continue;
+          if (
+            mode === 'LOCAL_HOTSEAT' &&
+            (
+              event.player !== hotseatActiveSeatRef.current ||
+              hotseatPassToRef.current !== null ||
+              hotseatPinPadRef.current !== null ||
+              hotseatAwaitingUnlockRef.current === event.player ||
+              hotseatTurnDoneToRef.current !== null ||
+              hotseatExecutingRef.current
+            )
+          ) continue;
         }
         applyThinkTransition(event);
       }
@@ -1075,15 +1145,15 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
   ): 'p1' | 'p2' => {
     if (
       bridgeSeat &&
-      (playModeRef.current === 'SOLO_AI' || playModeRef.current === 'LOCAL_2P')
+      (playModeRef.current === 'SOLO_AI' || playModeRef.current === 'LOCAL_2P' || playModeRef.current === 'LOCAL_HOTSEAT')
     ) return bridgeSeat;
     if (playModeRef.current === 'SOLO_AI') return 'p1';
     if (playModeRef.current === 'ONLINE_HOST' || playModeRef.current === 'ONLINE_SERVER') return 'p1';
     if (playModeRef.current === 'ONLINE_JOIN') return onlineRoleRef.current === 'p1' ? 'p1' : 'p2';
     if (playModeRef.current === 'LOCAL_2P') return playerSlot === 2 ? 'p2' : 'p1';
-    // Hotseat: the slot maps to the seat (the shared control set is
-    // wired to the active slot, and the hotseat gate checks active).
-    if (playModeRef.current === 'LOCAL_HOTSEAT') return playerSlot === 2 ? 'p2' : 'p1';
+    // Hotseat: shared keyboard, touch, and gamepad controls always target
+    // whichever player is currently active on the device.
+    if (playModeRef.current === 'LOCAL_HOTSEAT') return hotseatActiveSeatRef.current;
     return 'p1';
   }, []);
 
@@ -1250,7 +1320,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
     }
     if (playModeRef.current === 'ONLINE_HOST' || playModeRef.current === 'ONLINE_SERVER') {
       networkManager.broadcastState(stateRef.current, locksRef.current);
-    } else if (playModeRef.current === 'LOCAL_2P' && localBridgeArmedRef.current) {
+    } else if ((playModeRef.current === 'LOCAL_2P' || playModeRef.current === 'LOCAL_HOTSEAT') && localBridgeArmedRef.current) {
       publishLocalBridgeState(stateRef.current, locksRef.current);
     }
     turnDecisionsRef.current.push({
@@ -1699,6 +1769,29 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
   const autoLockPlayer = useCallback((who: string) => {
     if (locksRef.current[who]) return;
     const current = stateRef.current;
+
+    if (playModeRef.current === 'LOCAL_HOTSEAT') {
+      if (choosingSkillMapRef.current[who]) {
+        setChoosingSkillMap(prev => {
+          const updated = { ...prev, [who]: false };
+          choosingSkillMapRef.current = updated;
+          return updated;
+        });
+      }
+      const locked = lockPlan(moveBuffersRef.current[who] ?? [], pendingPrimesMapRef.current[who] ?? 0);
+      pendingPrimesMapRef.current = { ...pendingPrimesMapRef.current, [who]: locked.pendingPrimes };
+      setPendingPrimesMap({ ...pendingPrimesMapRef.current });
+
+      const snake = current.snakes.find(s => s.id === who);
+      const nextBuffer = snake && snake.isAlive
+        ? ensureNonEmptyHotseatTimeoutBuffer(locked.buffer, snake.direction)
+        : locked.buffer;
+      if (nextBuffer !== moveBuffersRef.current[who]) {
+        moveBuffersRef.current = { ...moveBuffersRef.current, [who]: nextBuffer };
+        setMoveBuffers({ ...moveBuffersRef.current });
+      }
+    }
+
     const buffer = moveBuffersRef.current[who];
 
     if (!setLock(who, true)) return;
@@ -1716,10 +1809,10 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
       return;
     }
 
-    // Hotseat: the lock does NOT advance the turn (simultaneous model).
-    // It opens PIN setup (first lock) or the pass screen.
+    // Hotseat: first lock sets PIN (if needed), then resolves immediately if
+    // both seats are locked or passes to the opponent.
     if (playModeRef.current === 'LOCAL_HOTSEAT') {
-      hotseatAfterLock(who as 'p1' | 'p2');
+      hotseatAfterLock(who as HotseatSeat);
       return;
     }
 
@@ -1780,10 +1873,19 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
           !(mode === 'SOLO_AI' && who === 'p2' && isBuiltInAiActive());
         const snake = current.snakes.find(candidate => candidate.id === who);
 
-        // Hotseat: only the active player's think timer runs. The
-        // inactive player's countdown never starts (and an auto-lock
-        // of the inactive player would break the pass-the-phone turn).
-        if (mode === 'LOCAL_HOTSEAT' && who !== hotseatActiveSeatRef.current) {
+        // Hotseat: only the active player's think timer runs, and never during
+        // pass screen, PIN pad, round playback, or awaiting-unlock replay gate.
+        if (
+          mode === 'LOCAL_HOTSEAT' &&
+          (
+            who !== hotseatActiveSeatRef.current ||
+            hotseatPassToRef.current !== null ||
+            hotseatPinPadRef.current !== null ||
+            hotseatExecutingRef.current ||
+            hotseatAwaitingUnlockRef.current !== null ||
+            hotseatTurnDoneToRef.current !== null
+          )
+        ) {
           clearCountdown(who);
           return;
         }
@@ -1914,7 +2016,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
     if (menuOpenRef.current || settingsModalOpenRef.current || latencyModalOpenRef.current) return;
     if (current.phase === 'OVER' || inLobby || inOnlineLobby || !settingsRef.current.turnBased) return;
     const targetKey = getTargetKey(playerSlot, bridgeSeat);
-    if (hotseatBlocksInput(targetKey)) return;
+    if (hotseatBlocksInput(targetKey, Boolean(bridgeSeat))) return;
     // If [RATTLE] or [DART] was pressed without a following direction, fizzle cleanly
     if (choosingSkillMapRef.current[targetKey]) {
       setChoosingSkillMap(prev => {
@@ -1966,7 +2068,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
 
     const targetKey = getTargetKey(playerSlot, bridgeSeat);
 
-    if (hotseatBlocksInput(targetKey)) return false;
+    if (hotseatBlocksInput(targetKey, Boolean(bridgeSeat))) return false;
 
     const currentSnake = current.snakes.find(snake => snake.id === targetKey);
     if (!currentSnake || !currentSnake.isAlive) return false;
@@ -2120,7 +2222,9 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
 
   const getBridgeSeat = useCallback((): 'p1' | 'p2' | null => {
     const mode = playModeRef.current;
-    if (mode === 'LOCAL_2P' || mode === 'SOLO_AI') return bridgeSeatRef.current;
+    if (mode === 'LOCAL_2P' || mode === 'SOLO_AI' || (mode === 'LOCAL_HOTSEAT' && localBridgeArmedRef.current)) {
+      return bridgeSeatRef.current;
+    }
     if (mode === 'ONLINE_HOST') return 'p1';
     if (mode === 'ONLINE_JOIN') {
       return onlineRoleRef.current === 'p1' || onlineRoleRef.current === 'p2'
@@ -2282,44 +2386,74 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
     }, 1000);
   }, []);
 
-  // ---- LOCAL 2P HOTSEAT: simultaneous-resolution execution (v2) ----
-  // A hotseat round resolves like a simultaneous-mode round: both locked
-  // plans step together through processGameTick, and death rules apply
-  // exactly as in simultaneous mode. There is no clone-and-test stop:
-  // plans are commitments, execution is the judge. This is what makes
-  // death possible in hotseat again (v1's validate-and-stop blocked
-  // every fatal move before it executed, so nobody could die).
-  const executeHotseatRound = useCallback((triggerSeat: 'p1' | 'p2') => {
+  // ---- LOCAL 2P HOTSEAT: simultaneous-resolution execution ----
+  // Resolves immediately once both alive players are locked. Stepped ticks stop
+  // as soon as either alive snake drains its queue, keeping the other snake's
+  // remaining queued moves intact and locked.
+  const executeHotseatRound = useCallback((triggerSeat: HotseatSeat) => {
     if (hotseatChainRef.current) return;
     if (stateRef.current.phase === 'OVER') return;
-    // Live resolution needs both seats locked with a non-empty plan.
     const alive = stateRef.current.snakes.filter(s => s.isAlive);
     if (!alive.every(s => locksRef.current[s.id] && (moveBuffersRef.current[s.id]?.length ?? 0) > 0)) return;
     hotseatChainRef.current = true;
     setHotseatExecuting(true);
 
-    // Snapshot the pre-round history index BEFORE the first tick resolves,
-    // so the other seat's replay knows where this round begins in
-    // matchHistory. Match start seeds matchHistory with the initial state,
-    // so a pre-round entry always exists; clamp defensively.
+    // Pre-round snapshot index before the first tick of this batch resolves.
     const roundStartIdx = Math.max(0, matchHistoryRef.current.length - 1);
-    const otherSeat: 'p1' | 'p2' = triggerSeat === 'p1' ? 'p2' : 'p1';
 
-    const finish = (releaseTriggerLock: boolean) => {
+    const finish = () => {
       hotseatChainRef.current = false;
       setHotseatExecuting(false);
-      // Leftover moves are discarded (use-it-or-lose-it, as in v1).
-      moveBuffersRef.current = Object.fromEntries(
-        Object.keys(moveBuffersRef.current).map(k => [k, []]),
-      );
-      setMoveBuffers({ ...moveBuffersRef.current });
-      if (releaseTriggerLock) {
-        commitLocks({ ...locksRef.current, [triggerSeat]: false });
+
+      const aliveSeats = stateRef.current.snakes
+        .filter(s => s.isAlive)
+        .map(s => s.id as HotseatSeat);
+      const decision = resolveHotseatAfterRound({
+        triggerSeat,
+        phase: stateRef.current.phase,
+        aliveSeats,
+        buffers: moveBuffersRef.current,
+        roundStartIdx,
+        existingReplay: hotseatReplayRef.current,
+        aiBridgeActive: localBridgeArmedRef.current,
+      });
+
+      moveBuffersRef.current = decision.nextBuffers;
+      setMoveBuffers(decision.nextBuffers);
+      hotseatReplayRef.current = decision.nextReplay;
+      commitLocks(decision.nextLocks);
+
+      if (localBridgeArmedRef.current) {
+        publishLocalBridgeState(stateRef.current, decision.nextLocks);
       }
-      // If the match continues, the other seat still has to watch this
-      // round: its unlock plays it back visual-only from matchHistory.
-      if (stateRef.current.phase !== 'OVER') {
-        hotseatReplayRef.current = { seat: otherSeat, startIdx: roundStartIdx };
+
+      if (decision.nextAction === 'GAME_OVER') {
+        hotseatAwaitingUnlockRef.current = null;
+        setHotseatAwaitingUnlock(null);
+        hotseatTurnDoneToRef.current = null;
+        setHotseatTurnDoneTo(null);
+        setHotseatPassTo(null);
+        setHotseatPinPad(null);
+      } else if (decision.nextAction === 'PASS_TO' && decision.passTo) {
+        if (decision.requiresTurnDoneConfirm) {
+          hotseatTurnDoneToRef.current = decision.passTo;
+          setHotseatTurnDoneTo(decision.passTo);
+        } else {
+          setHotseatPassTo(decision.passTo);
+        }
+      } else if (decision.nextAction === 'CONTINUE_PLANNING') {
+        applyThinkTransition({ type: 'PLANNING_ENTERED', player: decision.activeSeat, at: Date.now() });
+      } else if (decision.nextAction === 'WAIT_FOR_AI') {
+        // Defensively catch an AI bridge command that arrived right as the round finished.
+        const stillAlive = stateRef.current.snakes.filter(s => s.isAlive);
+        if (
+          stillAlive.length > 0 &&
+          stillAlive.every(s => locksRef.current[s.id] && (moveBuffersRef.current[s.id]?.length ?? 0) > 0)
+        ) {
+          queueMicrotask(() => {
+            executeHotseatRoundRef.current('p1');
+          });
+        }
       }
     };
 
@@ -2327,22 +2461,17 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
       if (!hotseatChainRef.current) return;
       const current = stateRef.current;
       if (current.phase === 'OVER') {
-        finish(false);
+        finish();
         return;
       }
-      // canProgress, mirroring maybeAdvanceTurn: the round ends as soon as
-      // any alive snake's plan is exhausted. A drained plan ends the round;
-      // it does NOT keep its snake moving straight.
       const canProgress = current.snakes
         .filter(s => s.isAlive)
         .every(s => (moveBuffersRef.current[s.id]?.length ?? 0) > 0);
       if (!canProgress) {
-        finish(true);
+        finish();
         return;
       }
 
-      // Shift one entry per alive snake and queue it, exactly as
-      // maybeAdvanceTurn does (dart/rattle skill entries included).
       for (const snake of current.snakes) {
         if (!snake.isAlive) continue;
         const buf = moveBuffersRef.current[snake.id] ?? [];
@@ -2372,7 +2501,6 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
       const { nextState, events } = processGameTick(prevState, settingsRef.current, 0);
       playTickEvents(events);
 
-      // Token/SP fly effects (mirrors the v1 hotseat block).
       if (!aiMode && events.tokenEaten) {
         for (const [snakeId, spAwarded] of Object.entries(events.tokenEaten)) {
           if (spAwarded && spAwarded > 0) {
@@ -2392,9 +2520,10 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
       setGameState(nextState);
       setMatchHistory(prev => [...prev, nextState]);
       dispatchAiState(nextState);
+      if (localBridgeArmedRef.current) {
+        publishLocalBridgeState(nextState, locksRef.current);
+      }
 
-      // Chain the next step after the beat (550ms, hitstop-aware),
-      // like maybeAdvanceTurn's openNextLockPhaseWithBeat.
       triggerHitstop(prevState, nextState, () => {
         hotseatStepTimerRef.current = setTimeout(() => {
           hotseatStepTimerRef.current = null;
@@ -2404,30 +2533,30 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
     };
 
     step();
-  }, [aiMode, commitLocks, dispatchAiState, playTickEvents, triggerHitstop]);
+  }, [aiMode, applyThinkTransition, commitLocks, dispatchAiState, playTickEvents, publishLocalBridgeState, triggerHitstop]);
+  executeHotseatRoundRef.current = executeHotseatRound;
 
-  // P2's viewing of a resolved round (v2): NOT the post-match replay UI.
-  // It steps through the round's recorded matchHistory states with the
-  // normal board and HUD — exactly like watching a live resolution —
-  // paced by the same hitstop + 550ms beat the live chain uses. Nothing
-  // is re-executed: no engine ticks, no token/SP effects, no new history
-  // entries. The walk ends on the last recorded state, which IS the live
-  // settled board, so live state is exactly where it was when playback
-  // finishes and planning opens for this seat. Hidden plans stay hidden:
-  // the HUD only ever shows the active seat's queue, so the other seat's
-  // locked next-round plan never appears during playback.
-  const playHotseatRoundReplay = useCallback((seat: 'p1' | 'p2') => {
+  // Catch-up playback of missed ticks when the phone passes back to a player.
+  const playHotseatRoundReplay = useCallback((seat: HotseatSeat) => {
     const pending = hotseatReplayRef.current;
     if (!pending || pending.seat !== seat) return;
     if (hotseatExecutingRef.current) return;
-    // Snapshot the round's frames up front: playback never appends to
-    // matchHistory, so this slice is stable for the whole viewing.
     const frames = matchHistoryRef.current.slice(pending.startIdx);
-    if (frames.length <= 1) {
-      // No ticks to show (defensive: a real round always has >= 1 tick).
+    const completePlayback = (settledState?: GameState) => {
       hotseatReplayRef.current = null;
+      hotseatAwaitingUnlockRef.current = null;
+      setHotseatAwaitingUnlock(null);
       setHotseatExecuting(false);
+      if (settledState) {
+        stateRef.current = settledState;
+        setGameState(settledState);
+      }
       commitLocks({ ...locksRef.current, [seat]: false });
+      applyThinkTransition({ type: 'PLANNING_ENTERED', player: seat, at: Date.now() });
+    };
+
+    if (frames.length <= 1) {
+      completePlayback(frames[frames.length - 1]);
       return;
     }
     setHotseatExecuting(true);
@@ -2437,21 +2566,12 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
       setGameState(state);
     };
 
-    const finish = () => {
-      hotseatReplayRef.current = null;
-      setHotseatExecuting(false);
-      commitLocks({ ...locksRef.current, [seat]: false });
-    };
-
-    // Show the pre-round board first, then step forward one recorded
-    // state per beat — the same rhythm as the live chain.
     show(frames[0]);
     let idx = 0;
     const advance = () => {
-      // Quit clears the pending record; stop the chain if it went away.
       if (hotseatReplayRef.current !== pending) return;
       if (idx >= frames.length - 1) {
-        finish();
+        completePlayback(frames[frames.length - 1]);
         return;
       }
       const prev = frames[idx];
@@ -2466,17 +2586,11 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
       });
     };
     advance();
-  }, [commitLocks, triggerHitstop]);
+  }, [applyThinkTransition, commitLocks, triggerHitstop]);
 
-  // Unlock resolution (v2): tap head while locked, after the PIN check.
-  // - If a round playback is owed to this seat, play it: live-style
-  //   playback of the last resolved round's recorded states, on the
-  //   normal board at the live beat (see playHotseatRoundReplay). Planning
-  //   opens when the playback reaches the settled board.
-  // - Otherwise, if both seats hold locked plans, resolve the round live.
-  // - Otherwise there is nothing to watch and nothing to resolve; the
-  //   seat just stays locked (unreachable in the normal alternating flow).
-  const resolveHotseatUnlock = useCallback((seat: 'p1' | 'p2') => {
+  // Unlock resolution: play owed replay backlog before opening planning, or
+  // execute defensively if both seats are already locked.
+  const resolveHotseatUnlock = useCallback((seat: HotseatSeat) => {
     const pending = hotseatReplayRef.current;
     if (pending && pending.seat === seat) {
       playHotseatRoundReplay(seat);
@@ -2485,15 +2599,16 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
     executeHotseatRound(seat);
   }, [executeHotseatRound, playHotseatRoundReplay]);
 
-  // Tap head while locked = unlock. PIN pad if a PIN is set, otherwise
-  // resolve the unlock (live round, or a replay owed to this seat).
-  const handleHotseatUnlock = useCallback((seat: 'p1' | 'p2') => {
+  // Tap head / UNLOCK / Enter / Space while gated behind unlock.
+  const handleHotseatUnlock = useCallback((seat: HotseatSeat) => {
     if (playModeRef.current !== 'LOCAL_HOTSEAT') return;
+    if (localBridgeArmedRef.current) return;
     if (seat !== hotseatActiveSeatRef.current) return;
-    if (!locksRef.current[seat]) return;
+    if (!locksRef.current[seat] && hotseatAwaitingUnlockRef.current !== seat) return;
     if (hotseatExecutingRef.current) return;
     if (hotseatPassToRef.current !== null) return;
     if (hotseatPinPadRef.current !== null) return;
+    if (hotseatTurnDoneToRef.current !== null) return;
     const pin = hotseatPinsRef.current[seat];
     if (pin) {
       setHotseatPinInput('');
@@ -2504,28 +2619,25 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
     resolveHotseatUnlock(seat);
   }, [resolveHotseatUnlock]);
 
-  // Pass screen TAP WHEN READY: the incoming player takes the phone.
-  // Their think timer starts at turn begin (unlock + plan phase) and
-  // stops when they lock.
+  // Pass screen TAP WHEN READY: incoming player takes the phone.
   const handleHotseatPassReady = useCallback(() => {
     const next = hotseatPassToRef.current;
     if (!next) return;
     setHotseatPassTo(null);
     setHotseatActiveSeat(next);
-    // If the incoming seat is owed a round playback, open their screen
-    // on the pre-round board already: the playback then plays forward
-    // from here on unlock, instead of the screen sitting on the settled
-    // board (spoiling the result) and jumping backward at unlock.
-    // Buffers, locks, and history are untouched — playback's own walk
-    // still restores the settled board before planning opens.
     const pending = hotseatReplayRef.current;
     if (pending && pending.seat === next) {
+      hotseatAwaitingUnlockRef.current = next;
+      setHotseatAwaitingUnlock(next);
       const startState = matchHistoryRef.current[pending.startIdx];
       if (startState) {
         stateRef.current = startState;
         setGameState(startState);
       }
+      return;
     }
+    hotseatAwaitingUnlockRef.current = null;
+    setHotseatAwaitingUnlock(null);
     applyThinkTransition({ type: 'PLANNING_ENTERED', player: next, at: Date.now() });
   }, [applyThinkTransition]);
 
@@ -2550,7 +2662,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
     setHotseatPinPad(null);
     setHotseatPinInput('');
     setHotseatPinError(null);
-    setHotseatPassTo(pad.seat === 'p1' ? 'p2' : 'p1');
+    finishHotseatLock(pad.seat, nextPins);
   };
   const handleHotseatPinSkip = () => {
     const pad = hotseatPinPadRef.current;
@@ -2561,7 +2673,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
     setHotseatPinPad(null);
     setHotseatPinInput('');
     setHotseatPinError(null);
-    setHotseatPassTo(pad.seat === 'p1' ? 'p2' : 'p1');
+    finishHotseatLock(pad.seat, nextPins);
   };
   const handleHotseatPinUnlock = () => {
     const pad = hotseatPinPadRef.current;
@@ -2641,20 +2753,29 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
     const snake = stateRef.current.snakes.find(s => s.id === targetSeat);
     if (!snake || !snake.isAlive) return;
 
-    // Hotseat: while locked, tap head = UNLOCK (PIN pad if PIN set).
-    // Any other board tap while locked is silently ignored — the
-    // locked player cannot change their queue.
-    if (playModeRef.current === 'LOCAL_HOTSEAT' && locksRef.current[targetSeat]) {
-      if (hotseatBlocksInput(targetSeat)) return;
+    // Hotseat: while awaiting unlock/replay (or locked), tap head = UNLOCK (PIN pad if PIN set).
+    // Any other board tap while locked/awaiting unlock is silently ignored.
+    if (
+      playModeRef.current === 'LOCAL_HOTSEAT' &&
+      (locksRef.current[targetSeat] || hotseatAwaitingUnlockRef.current === targetSeat)
+    ) {
+      if (
+        targetSeat !== hotseatActiveSeatRef.current ||
+        hotseatPassToRef.current !== null ||
+        hotseatExecutingRef.current ||
+        hotseatPinPadRef.current !== null ||
+        hotseatTurnDoneToRef.current !== null
+      ) return;
       const head = snake.body[0];
       if (head && cell.x === head.x && cell.y === head.y) {
         if (settingsRef.current.gestureTapHeadLockEnabled === false) return;
-        handleHotseatUnlock(targetSeat as 'p1' | 'p2');
+        handleHotseatUnlock(targetSeat as HotseatSeat);
       }
       return;
     }
 
-    // Clicking while the buffer is already locked: denied sound, no X flash
+    // Clicking while the buffer is already locked or blocked: denied sound, no X flash
+    if (hotseatBlocksInput(targetSeat)) return;
     if (locksRef.current[targetSeat]) {
       soundEngine.playDenied();
       return;
@@ -2784,10 +2905,14 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
       targetSlot = t.slot;
     }
 
-    if (playModeRef.current === 'LOCAL_HOTSEAT' && locksRef.current[targetSeat]) {
-      handleHotseatUnlock(targetSeat);
+    if (
+      playModeRef.current === 'LOCAL_HOTSEAT' &&
+      (locksRef.current[targetSeat] || hotseatAwaitingUnlockRef.current === targetSeat)
+    ) {
+      handleHotseatUnlock(targetSeat as HotseatSeat);
       return;
     }
+    if (hotseatBlocksInput(targetSeat)) return;
 
     const buf = moveBuffersRef.current[targetSeat] ?? [];
     if (buf.length > 0 && !locksRef.current[targetSeat]) {
@@ -2801,6 +2926,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
     if (playModeRef.current === 'ONLINE_SERVER' || playModeRef.current === 'ONLINE_SPECTATOR') return;
 
     const { slot: targetSlot, seat: targetSeat } = getMouseTarget();
+    if (hotseatBlocksInput(targetSeat)) return;
     if (locksRef.current[targetSeat]) return;
     if (choosingSkillMapRef.current[targetSeat]) return;
     const buf = moveBuffersRef.current[targetSeat] ?? [];
@@ -2859,7 +2985,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
 
   useEffect(() => {
     if (
-      playMode !== 'LOCAL_2P' ||
+      (playMode !== 'LOCAL_2P' && playMode !== 'LOCAL_HOTSEAT') ||
       !localBridgeArmed ||
       !localBridgeRoomId ||
       localBridgeReadyPending
@@ -2903,7 +3029,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
 
   const selectBridgeSeat = useCallback((seat: 'p1' | 'p2') => {
     const mode = playModeRef.current;
-    if (mode !== 'LOCAL_2P' && mode !== 'SOLO_AI') return;
+    if (mode !== 'LOCAL_2P' && mode !== 'SOLO_AI' && mode !== 'LOCAL_HOTSEAT') return;
     bridgeSeatRef.current = seat;
     if (mode === 'SOLO_AI' && seat === 'p2') soloAiP2OverriddenRef.current = true;
   }, []);
@@ -2990,6 +3116,10 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
     setHotseatActiveSeat('p1');
     setHotseatExecuting(false);
     hotseatReplayRef.current = null;
+    hotseatAwaitingUnlockRef.current = null;
+    setHotseatAwaitingUnlock(null);
+    hotseatTurnDoneToRef.current = null;
+    setHotseatTurnDoneTo(null);
     hotseatChainRef.current = false;
     if (hotseatStepTimerRef.current) {
       clearTimeout(hotseatStepTimerRef.current);
@@ -3071,6 +3201,21 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
       if (!pressed) return;
       const targetSlot = playModeRef.current === 'LOCAL_2P' && slot === 2 ? 2 : 1;
       if (button === 'A') {
+        if (playModeRef.current === 'LOCAL_HOTSEAT') {
+          if (hotseatTurnDoneToRef.current !== null) {
+            if (!menuOpenRef.current && !settingsModalOpenRef.current && !latencyModalOpenRef.current) {
+              handleHotseatConfirmTurnDone();
+            }
+            return;
+          }
+          const seat = hotseatActiveSeatRef.current;
+          if (locksRef.current[seat] || hotseatAwaitingUnlockRef.current === seat) {
+            handleHotseatUnlock(seat);
+          } else {
+            handleBufferLock(seat === 'p2' ? 2 : 1);
+          }
+          return;
+        }
         const isOnline = playModeRef.current === 'ONLINE_HOST' || playModeRef.current === 'ONLINE_JOIN' || playModeRef.current === 'ONLINE_SERVER';
         const ready = stateRef.current.readyConfirmed;
         const mySeat = onlineRoleRef.current === 'p2' ? 'p2' : 'p1';
@@ -3222,8 +3367,13 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
         // Hotseat: one shared control set — Enter and Space toggle
         // lock/unlock for the active player (whosever turn it is).
         if (playMode === 'LOCAL_HOTSEAT') {
+          if (hotseatTurnDoneToRef.current !== null) {
+            handleHotseatConfirmTurnDone();
+            e.preventDefault();
+            return;
+          }
           const seat = hotseatActiveSeatRef.current;
-          if (locksRef.current[seat]) {
+          if (locksRef.current[seat] || hotseatAwaitingUnlockRef.current === seat) {
             handleHotseatUnlock(seat);
           } else {
             handleBufferLock(seat === 'p2' ? 2 : 1);
@@ -3852,6 +4002,10 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
       setHotseatActiveSeat('p1');
       setHotseatExecuting(false);
       hotseatReplayRef.current = null;
+      hotseatAwaitingUnlockRef.current = null;
+      setHotseatAwaitingUnlock(null);
+      hotseatTurnDoneToRef.current = null;
+      setHotseatTurnDoneTo(null);
     }
     maybeOpenPlanningSessions();
     dispatchAiState(initial);
@@ -3866,7 +4020,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
 
     if (mode === 'ONLINE_HOST' || mode === 'ONLINE_SERVER') {
       activeMatchRef.current = networkManager.broadcastMatchStart(initial, settingsRef.current);
-    } else if (mode === 'LOCAL_2P' && localBridgeArmedRef.current && localBridgeRoomIdRef.current) {
+    } else if ((mode === 'LOCAL_2P' || mode === 'LOCAL_HOTSEAT') && localBridgeArmedRef.current && localBridgeRoomIdRef.current) {
       localMatchNumberRef.current += 1;
       activeMatchRef.current = {
         matchId: crypto.randomUUID(),
@@ -3898,7 +4052,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
     startNewMatch();
   };
 
-  const handleStartLocal2PBridge = async () => {
+  const armLocalBridge = async (targetMode: 'LOCAL_2P' | 'LOCAL_HOTSEAT') => {
     const currentUser = auth.currentUser;
     if (
       !isAdmin ||
@@ -3914,6 +4068,8 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
     teardownLocalBridge();
     setJoinError(null);
     setLocalBridgeArming(true);
+    localBridgeTargetModeRef.current = targetMode;
+    setLocalBridgeTargetMode(targetMode);
     const roomId = `LOCAL-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
     const secret = generateBridgeSecret();
     let roomCreated = false;
@@ -3950,11 +4106,18 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
     setInOnlineLobby(false);
   };
 
+  const handleStartLocal2PBridge = () => armLocalBridge('LOCAL_2P');
+  const handleStartHotseatBridge = () => armLocalBridge('LOCAL_HOTSEAT');
+
   const handleConfirmLocalBridgeReady = useCallback(() => {
     if (!localBridgeReadyPending || !localBridgeArmedRef.current || !localBridgeRoomIdRef.current) return;
     soundEngine.playMenuSelect();
     setLocalBridgeReadyPending(false);
-    handleStartLocal2P();
+    if (localBridgeTargetModeRef.current === 'LOCAL_HOTSEAT') {
+      handleStartHotseat();
+    } else {
+      handleStartLocal2P();
+    }
   }, [localBridgeReadyPending]);
 
   const handleCancelLocalBridgeReady = useCallback(() => {
@@ -4261,6 +4424,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
               onStartLocal2P={handleStartLocal2P}
               onStartHotseat={handleStartHotseat}
               onStartLocal2PBridge={handleStartLocal2PBridge}
+              onStartHotseatBridge={handleStartHotseatBridge}
               isAdmin={isAdmin}
               onCreateOnlineRoom={handleCreateOnlineRoom}
               onCreateServerRoom={handleCreateServerRoom}
@@ -4319,7 +4483,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
                   <span>BACK</span>
                 </button>
                 <div className="text-xs font-black uppercase tracking-wider">
-                  LOCAL 2P vs AI BRIDGE
+                  {localBridgeTargetMode === 'LOCAL_HOTSEAT' ? 'HOTSEAT vs AI BRIDGE' : 'LOCAL 2P vs AI BRIDGE'}
                 </div>
               </div>
 
@@ -4478,7 +4642,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
                   )}
                 {showTurnHint && displayState.turnBased && displayState.phase !== 'OVER' && !replayActive && (
                   <div role="status" className="absolute top-1 left-1/2 z-30 flex w-[min(20rem,calc(100%-1rem))] -translate-x-1/2 items-center justify-between gap-2 border-2 border-[#0F380F] bg-[#9BBC0F] px-2 py-1 font-mono text-[10px] font-bold text-[#0F380F] shadow-[2px_2px_0px_#0F380F]">
-                    <span>{playMode === 'LOCAL_HOTSEAT' ? 'UNLOCK → MOVE → LOCK → PASS' : 'BOTH LOCK → BOARD STEPS'}</span>
+                    <span>{playMode === 'LOCAL_HOTSEAT' ? (localBridgeArmed ? 'PLAN → LOCK → WATCH' : 'MOVE → LOCK → PASS') : 'BOTH LOCK → BOARD STEPS'}</span>
                     <button
                       type="button"
                       onClick={() => {
@@ -4540,7 +4704,26 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
                 )}
               </div>
               <div className="controls-area">
-                {!replayActive && (
+                {!replayActive && playMode === 'LOCAL_HOTSEAT' && !localBridgeArmed && hotseatTurnDoneTo !== null ? (
+                  <div
+                    role="status"
+                    className="w-full max-w-[540px] min-h-9 [@media(max-height:540px)]:min-h-7 flex items-center justify-between gap-2 border-2 border-[#0F380F] bg-[#8BAC0F] px-2.5 py-1 font-mono text-[#0F380F] shadow-[2px_2px_0px_#0F380F]"
+                  >
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-xs font-black uppercase tracking-wider shrink-0">TURN DONE</span>
+                      <span className="text-[10px] font-bold opacity-85 truncate">
+                        Next: {gameState.snakes.find(s => s.id === hotseatTurnDoneTo)?.name ?? 'PLAYER'}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleHotseatConfirmTurnDone}
+                      className="shrink-0 h-8 [@media(max-height:540px)]:h-6 px-3 bg-[#0F380F] hover:bg-[#306230] text-[#9BBC0F] border-2 border-[#0F380F] font-black text-xs uppercase cursor-pointer shadow-[2px_2px_0px_#306230] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+                    >
+                      PASS PHONE
+                    </button>
+                  </div>
+                ) : !replayActive && (
                   <ControlsOverlay
                     onDirection={(dir) => handleDirectionInput(controlsSlot, dir)}
                     onLock={() => handleBufferLock(controlsSlot)}
@@ -4566,10 +4749,10 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
                         .filter((direction): direction is Direction => direction !== null)
                         .map((direction): BufferEntry => ({ type: 'move', direction }))}
                     queueLimit={getBufferCapacity(controlsSnake)}
-                    locked={locks[getTargetKey(controlsSlot)]}
+                    locked={locks[getTargetKey(controlsSlot)] || (playMode === 'LOCAL_HOTSEAT' && hotseatAwaitingUnlock === hotseatActiveSeat)}
                     turnBased={settings.turnBased}
                     localTwoPlayer={playMode === 'LOCAL_2P'}
-                    isHotseat={playMode === 'LOCAL_HOTSEAT'}
+                    isHotseat={playMode === 'LOCAL_HOTSEAT' && !localBridgeArmed}
                     onUnlock={() => handleHotseatUnlock(hotseatActiveSeat)}
                   />
                 )}
@@ -4598,7 +4781,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
       {/* Footer info — hidden in match view and short landscape screens to give full vertical budget */}
       {!isMatchView && (
         <footer className="text-center text-[10px] font-mono opacity-80 py-0.5 shrink-0 [@media(max-height:500px)]:hidden">
-          4-shade palette • {settings.gridSize}×{settings.gridSize} grid • {playMode === 'LOCAL_HOTSEAT' ? 'Turn-based hotseat: unlock → move → lock → pass' : settings.turnBased ? 'Turn-based simultaneous moves' : `Host-authoritative ${settings.tickRate} TPS`} • Gamepad API ready
+          4-shade palette • {settings.gridSize}×{settings.gridSize} grid • {playMode === 'LOCAL_HOTSEAT' ? (localBridgeArmed ? 'Hotseat vs AI: plan → lock → board steps' : 'Turn-based hotseat: move → lock → pass') : settings.turnBased ? 'Turn-based simultaneous moves' : `Host-authoritative ${settings.tickRate} TPS`} • Gamepad API ready
         </footer>
       )}
 
@@ -4630,7 +4813,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
             <div className="text-[10px] font-bold opacity-80">
               {hotseatPinPad.mode === 'set'
                 ? 'Optional — skip for no PIN. The PIN keeps the other player from viewing your queue.'
-                : 'Unlock your locked moves.'}
+                : 'Unlock to watch the round & plan.'}
             </div>
             <div aria-live="polite" className="h-7 text-lg font-black tracking-[0.5em]">
               {hotseatPinInput.padEnd(2, '·')}
