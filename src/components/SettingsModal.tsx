@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GameSettings } from '../types/game';
 import { buildResetSettings } from '../game/settingsStorage';
 import { soundEngine } from '../audio/soundEngine';
@@ -18,6 +18,31 @@ import {
 import { Settings, Volume2, VolumeX, X, Grid, Gauge, Tv, Trash2, Mail } from 'lucide-react';
 import { onValue, ref, remove } from 'firebase/database';
 
+export type SettingsRow =
+  | 'STYLE'
+  | 'TURNS'
+  | 'SHRINK'
+  | 'SHRINK_EVERY'
+  | 'GRID'
+  | 'TICKS'
+  | 'THINK_TIME'
+  | 'SOUND'
+  | 'CRT'
+  | 'RESET'
+  | 'CONTROLS'
+  | 'ACCOUNT'
+  | 'ADMIN'
+  | 'CLOSE';
+
+const CONTROL_GESTURE_TOGGLES = [
+  { key: 'gestureSwipeEnabled', label: 'Swipe' },
+  { key: 'gestureCardSwipeEnabled', label: 'Card-Swipe' },
+  { key: 'gestureTapPathEnabled', label: 'Tap-to-Path' },
+  { key: 'gestureTapHeadLockEnabled', label: 'Tap-Head Lock' },
+  { key: 'gestureDragEnabled', label: 'Drag' },
+  { key: 'gestureLongPressEnabled', label: 'Long-Press' },
+] as const;
+
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -25,6 +50,8 @@ interface SettingsModalProps {
   onUpdateSettings: (newSettings: Partial<GameSettings>) => void;
   isOnlineGuest?: boolean;
   onRegisterHandler?: (handler: ((action: GamepadMenuAction) => void) | null) => void;
+  initialRow?: SettingsRow;
+  controlsOnly?: boolean;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -34,8 +61,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onUpdateSettings,
   isOnlineGuest = false,
   onRegisterHandler,
+  initialRow,
+  controlsOnly = false,
 }) => {
   const [focusIndex, setFocusIndex] = useState<number>(0);
+  const [controlSubFocus, setControlSubFocus] = useState<number>(0);
+  const prevIsOpenRef = useRef<boolean>(false);
   const [signedInUser, setSignedInUser] = useState<User | null>(auth.currentUser);
   const isGoogleSignedIn = Boolean(signedInUser && !signedInUser.isAnonymous);
   const [adminRooms, setAdminRooms] = useState<Array<{
@@ -88,19 +119,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     }
   };
 
-  type SettingsRow = 'STYLE' | 'TURNS' | 'SHRINK' | 'SHRINK_EVERY' | 'GRID' | 'TICKS' | 'THINK_TIME' | 'SOUND' | 'CRT' | 'RESET' | 'CONTROLS' | 'ACCOUNT' | 'ADMIN' | 'CLOSE';
-
-  const baseRows: SettingsRow[] = isOnlineGuest
+  const baseRows: SettingsRow[] = controlsOnly
+    ? ['CONTROLS', 'CLOSE']
+    : isOnlineGuest
     ? ['SOUND', 'CRT', 'CONTROLS', 'ACCOUNT', 'CLOSE']
     : settings.turnBased
     ? ['STYLE', 'TURNS', 'SHRINK', 'SHRINK_EVERY', 'GRID', 'THINK_TIME', 'SOUND', 'CRT', 'RESET', 'CONTROLS', 'ACCOUNT', 'CLOSE']
     : ['STYLE', 'GRID', 'TICKS', 'SOUND', 'CRT', 'RESET', 'CONTROLS', 'ACCOUNT', 'CLOSE'];
 
-  const rows: SettingsRow[] = (signedInUser && ADMIN_UIDS.includes(signedInUser.uid))
+  const rows: SettingsRow[] = controlsOnly
+    ? baseRows
+    : (signedInUser && ADMIN_UIDS.includes(signedInUser.uid))
     ? [...baseRows.slice(0, -1), 'ADMIN', 'CLOSE']
     : baseRows;
 
   const currentRow = rows[focusIndex] || rows[0];
+
+  useEffect(() => {
+    if (isOpen && !prevIsOpenRef.current) {
+      const targetIndex = initialRow ? rows.indexOf(initialRow) : 0;
+      setFocusIndex(targetIndex >= 0 ? targetIndex : 0);
+      setControlSubFocus(0);
+    }
+    prevIsOpenRef.current = isOpen;
+  }, [isOpen, initialRow, rows]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -321,6 +363,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               else setResetArmed(true);
             }
             break;
+          case 'CONTROLS': {
+            const toggle = CONTROL_GESTURE_TOGGLES[controlSubFocus];
+            if (toggle) {
+              const enabled = (settings as any)[toggle.key] !== false;
+              onUpdateSettings({ [toggle.key]: !enabled });
+            }
+            break;
+          }
           case 'ACCOUNT':
             if (!authBusy) {
               if (isGoogleSignedIn) void handleSignOut();
@@ -335,6 +385,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       }
 
       if (action === 'LEFT' || action === 'RIGHT') {
+        if (currentRow === 'CONTROLS') {
+          soundEngine.playMenuMove();
+          const dir = action === 'RIGHT' ? 1 : -1;
+          setControlSubFocus((prev) => {
+            const next = prev + dir;
+            if (next < 0) return CONTROL_GESTURE_TOGGLES.length - 1;
+            if (next >= CONTROL_GESTURE_TOGGLES.length) return 0;
+            return next;
+          });
+          return;
+        }
         soundEngine.playMenuSelect();
         const dir = action === 'RIGHT' ? 1 : -1;
         switch (currentRow) {
@@ -434,6 +495,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     handleGoogleSignIn,
     resetArmed,
     handleResetDefaults,
+    controlSubFocus,
   ]);
 
   if (!isOpen) return null;
@@ -459,7 +521,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Guest Adopted Rules Info Banner */}
-        {isOnlineGuest && (
+        {!controlsOnly && isOnlineGuest && (
           <div className="bg-[#0F380F] text-[#9BBC0F] p-1.5 border border-[#0F380F] text-[10px] font-bold text-center flex flex-col gap-0.5 shrink-0">
             <div className="font-black">👑 ADOPTED HOST MATCH RULES:</div>
             <div>
@@ -474,7 +536,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         {/* Options */}
         <div className="flex flex-col gap-1.5 text-xs font-bold flex-1 justify-between min-h-0 overflow-y-auto pr-0.5">
           {/* Play Style */}
-          {!isOnlineGuest && (
+          {!controlsOnly && !isOnlineGuest && (
             <div
               className={`flex flex-col gap-1 p-1.5 border transition-all ${
                 currentRow === 'STYLE'
@@ -519,7 +581,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           )}
 
           {/* Race length in turns (turn-based only) */}
-          {!isOnlineGuest && settings.turnBased && (
+          {!controlsOnly && !isOnlineGuest && settings.turnBased && (
             <div
               className={`flex flex-col gap-1 p-1.5 border transition-all ${
                 currentRow === 'TURNS'
@@ -557,7 +619,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           )}
 
           {/* Shrink phase on/off (turn-based only) */}
-          {!isOnlineGuest && settings.turnBased && (
+          {!controlsOnly && !isOnlineGuest && settings.turnBased && (
             <div
               className={`flex flex-col gap-1 p-1.5 border transition-all ${
                 currentRow === 'SHRINK'
@@ -602,7 +664,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           )}
 
           {/* Ring closes every N turns (turn-based only) */}
-          {!isOnlineGuest && settings.turnBased && (
+          {!controlsOnly && !isOnlineGuest && settings.turnBased && (
             <div
               className={`flex flex-col gap-1 p-1.5 border transition-all ${
                 currentRow === 'SHRINK_EVERY'
@@ -640,7 +702,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           )}
 
           {/* Grid Size */}
-          {!isOnlineGuest && (
+          {!controlsOnly && !isOnlineGuest && (
             <div
               className={`flex flex-col gap-1 p-1.5 border transition-all ${
                 currentRow === 'GRID'
@@ -678,7 +740,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           )}
 
           {/* Tick Rate Speed (real-time only) */}
-          {!isOnlineGuest && !settings.turnBased && (
+          {!controlsOnly && !isOnlineGuest && !settings.turnBased && (
             <div
               className={`flex flex-col gap-1 p-1.5 border transition-all ${
                 currentRow === 'TICKS'
@@ -716,7 +778,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           )}
 
           {/* Per-turn planning limit */}
-          {!isOnlineGuest && settings.turnBased && (
+          {!controlsOnly && !isOnlineGuest && settings.turnBased && (
             <div
               className={`flex flex-col gap-1 p-1.5 border transition-all ${
                 currentRow === 'THINK_TIME'
@@ -759,6 +821,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           )}
 
           {/* Sound Toggle */}
+          {!controlsOnly && (
           <div
             className={`flex items-center justify-between p-2 border transition-all ${
               currentRow === 'SOUND'
@@ -785,8 +848,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               {settings.soundEnabled ? 'ON' : 'OFF'}
             </button>
           </div>
+          )}
 
           {/* CRT Scanline Filter Toggle */}
+          {!controlsOnly && (
           <div
             className={`flex items-center justify-between p-2 border transition-all ${
               currentRow === 'CRT'
@@ -809,9 +874,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               {settings.crtFilterEnabled ? 'ON' : 'OFF'}
             </button>
           </div>
+          )}
 
           {/* Restore all settings to defaults (two-step: arm, then confirm) */}
-          {!isOnlineGuest && (
+          {!controlsOnly && !isOnlineGuest && (
             <div
               className={`flex flex-col gap-1 p-2 border transition-all ${
                 currentRow === 'RESET'
@@ -864,28 +930,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 {currentRow === 'CONTROLS' && <span className="animate-pulse">►</span>}
                 <span>CONTROLS GESTURES</span>
               </span>
-              <span className="text-[9px] opacity-75">DEVICE DEFAULTS</span>
+              {currentRow === 'CONTROLS' ? (
+                <span className="text-[9px] bg-[#0F380F] text-[#9BBC0F] px-1 font-bold">[◄ ►] PICK • [A] FLIP</span>
+              ) : (
+                <span className="text-[9px] opacity-75">DEVICE DEFAULTS</span>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-1 text-[10px]">
-              {[
-                { key: 'gestureSwipeEnabled', label: 'Swipe' },
-                { key: 'gestureCardSwipeEnabled', label: 'Card-Swipe' },
-                { key: 'gestureTapPathEnabled', label: 'Tap-to-Path' },
-                { key: 'gestureTapHeadLockEnabled', label: 'Tap-Head Lock' },
-                { key: 'gestureDragEnabled', label: 'Drag' },
-                { key: 'gestureLongPressEnabled', label: 'Long-Press' },
-              ].map(({ key, label }) => {
+              {CONTROL_GESTURE_TOGGLES.map(({ key, label }, idx) => {
                 const enabled = (settings as any)[key] !== false;
+                const isSubFocused = currentRow === 'CONTROLS' && controlSubFocus === idx;
                 return (
                   <button
                     key={key}
                     type="button"
-                    onClick={() => onUpdateSettings({ [key]: !enabled })}
+                    onClick={() => {
+                      setControlSubFocus(idx);
+                      onUpdateSettings({ [key]: !enabled });
+                    }}
                     className={`min-h-[44px] py-2 px-2 border border-[#0F380F] font-black flex items-center justify-between cursor-pointer ${
                       enabled ? 'bg-[#0F380F] text-[#9BBC0F]' : 'bg-[#9BBC0F] text-[#0F380F]'
-                    }`}
+                    }${isSubFocused ? ' ring-2 ring-[#ffffff] shadow-[2px_2px_0px_#0F380F] scale-[1.02]' : ''}`}
                   >
-                    <span>{label}</span>
+                    <span>{isSubFocused ? `► ${label}` : label}</span>
                     <span>{enabled ? 'ON' : 'OFF'}</span>
                   </button>
                 );
@@ -894,6 +961,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
 
           {/* Optional account sign-in */}
+          {!controlsOnly && (
           <div
             className={`flex flex-col gap-1.5 p-2 border transition-all ${
               currentRow === 'ACCOUNT'
@@ -1081,9 +1149,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
             {authError && <div role="status" className="text-[9px] font-bold">{authError}</div>}
           </div>
+          )}
 
           {/* Admin Room Management */}
-          {signedInUser && ADMIN_UIDS.includes(signedInUser.uid) && (
+          {!controlsOnly && signedInUser && ADMIN_UIDS.includes(signedInUser.uid) && (
             <div
               className={`flex flex-col gap-2 p-2 border transition-all ${
                 currentRow === 'ADMIN'

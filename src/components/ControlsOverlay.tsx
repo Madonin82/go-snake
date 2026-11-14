@@ -6,7 +6,6 @@ interface ControlsOverlayProps {
   onDirection: (dir: Direction) => void;
   onLock: () => void;
   onUndo: () => void;
-  onClear: () => void;
   onSkill?: () => void;
   choosingSkill?: boolean;
   canUseSkill?: boolean;
@@ -23,7 +22,7 @@ interface ControlsOverlayProps {
 }
 
 export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
-  onDirection, onLock, onUndo, onClear, onSkill, choosingSkill = false, canUseSkill = false, equippedSkill = null, queue, queueLimit, locked, turnBased,
+  onDirection, onLock, onUndo, onSkill, choosingSkill = false, canUseSkill = false, equippedSkill = null, queue, queueLimit, locked, turnBased,
   localTwoPlayer = false,
   isHotseat = false,
   onUnlock,
@@ -73,15 +72,8 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
         </button>
       </div>
 
-        {/* Touch buttons in a diamond cluster: Y left, X top, A right, B bottom */}
+        {/* Touch buttons in a diamond cluster: X top, A right, B bottom */}
         <div className="relative w-36 h-36 shrink-0">
-          <button
-            onClick={onClear}
-            className="absolute left-1 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#306230] active:bg-[#0F380F] text-[#9BBC0F] flex items-center justify-center border-2 border-[#0F380F] cursor-pointer font-black text-xs shadow-[2px_2px_0px_#0F380F]"
-            title="Clear queued moves"
-          >
-            Y
-          </button>
           {onSkill && (
             <button
               type="button"
@@ -141,7 +133,7 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
       <div className="text-[9px] font-mono font-bold text-center mt-1.5 opacity-90 tracking-tight">
         {pendingPrimes > 0
           ? `${pendingPrimes} primed, ${pendingPrimes} SP escrowed • Press direction to place • B undo`
-          : choosingSkill ? `🎯 CHOOSE ${skillLabel} DIRECTION (Fwd/L/R) • B/E to cancel` : localTwoPlayer ? 'Plan: D-pad P1 • B undo • Y clear • E skill • P1 LOCK' : 'Plan: D-pad queue • B undo • Y clear • E skill • A lock'}
+          : choosingSkill ? `🎯 CHOOSE ${skillLabel} DIRECTION (Fwd/L/R) • B/E to cancel` : localTwoPlayer ? 'Plan: D-pad P1 • B undo • E skill • P1 LOCK' : 'Plan: D-pad queue • B undo • E skill • A lock'}
       </div>
     </div>
     <div className="portrait-controls-row hidden w-full min-h-9 [@media(max-height:540px)]:min-h-7 items-center gap-1.5 font-mono select-none shrink-0">

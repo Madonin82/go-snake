@@ -27,6 +27,7 @@ interface HudProps {
   onSkill?: (seat: string) => void;
   settings: GameSettings;
   onCardSwipe?: (seat: 'p1' | 'p2', dir: Direction) => void;
+  onCardHold?: () => void;
   choosingSkillMap?: Record<string, boolean>;
   canUseSkill?: (seat: string) => boolean;
   pendingPrimesMap?: Record<string, number>;
@@ -52,6 +53,7 @@ export const Hud: React.FC<HudProps> = ({
   onSkill,
   settings,
   onCardSwipe,
+  onCardHold,
   choosingSkillMap,
   canUseSkill: canUseSkillProp,
   pendingPrimesMap,
@@ -72,14 +74,62 @@ export const Hud: React.FC<HudProps> = ({
   // Live clock for the turn timer (re-renders 4x/sec while a turn is open)
   const [nowMs, setNowMs] = useState<number>(() => Date.now());
   const cardPointerStartRef = useRef<Record<string, { x: number; y: number }>>({});
+  const cardHoldTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const cardHoldTriggeredRef = useRef<Record<string, boolean>>({});
+  const onCardHoldRef = useRef(onCardHold);
+  onCardHoldRef.current = onCardHold;
+
+  const clearCardHoldTimer = (who: string) => {
+    const timer = cardHoldTimersRef.current[who];
+    if (timer) {
+      clearTimeout(timer);
+      delete cardHoldTimersRef.current[who];
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      Object.values(cardHoldTimersRef.current).forEach(clearTimeout);
+      cardHoldTimersRef.current = {};
+    };
+  }, []);
 
   const handleCardPointerDown = (who: string, e: React.PointerEvent) => {
     if (e.pointerType !== 'touch') return;
+    clearCardHoldTimer(who);
+    delete cardHoldTriggeredRef.current[who];
     cardPointerStartRef.current[who] = { x: e.clientX, y: e.clientY };
     e.currentTarget.setPointerCapture(e.pointerId);
+
+    if (onCardHoldRef.current && !replayActive && gameState.phase !== 'OVER') {
+      cardHoldTimersRef.current[who] = setTimeout(() => {
+        delete cardHoldTimersRef.current[who];
+        if (!cardPointerStartRef.current[who]) return;
+        cardHoldTriggeredRef.current[who] = true;
+        delete cardPointerStartRef.current[who];
+        onCardHoldRef.current?.();
+      }, 2000);
+    }
+  };
+
+  const handleCardPointerMove = (who: string, e: React.PointerEvent) => {
+    const start = cardPointerStartRef.current[who];
+    if (!start || e.pointerType !== 'touch') return;
+    if (Math.hypot(e.clientX - start.x, e.clientY - start.y) > 15) {
+      clearCardHoldTimer(who);
+    }
   };
 
   const handleCardPointerUp = (who: 'p1' | 'p2', e: React.PointerEvent) => {
+    clearCardHoldTimer(who);
+    if (cardHoldTriggeredRef.current[who]) {
+      delete cardPointerStartRef.current[who];
+      setTimeout(() => {
+        delete cardHoldTriggeredRef.current[who];
+      }, 150);
+      return;
+    }
+
     const start = cardPointerStartRef.current[who];
     if (!start) return;
     delete cardPointerStartRef.current[who];
@@ -94,6 +144,26 @@ export const Hud: React.FC<HudProps> = ({
         ? deltaX < 0 ? 'LEFT' : 'RIGHT'
         : deltaY < 0 ? 'UP' : 'DOWN';
       onCardSwipe?.(who, dir);
+    }
+  };
+
+  const handleCardPointerCancel = (who: string) => {
+    clearCardHoldTimer(who);
+    delete cardPointerStartRef.current[who];
+    delete cardHoldTriggeredRef.current[who];
+  };
+
+  const handleCardClickCapture = (who: string, e: React.MouseEvent) => {
+    if (cardHoldTriggeredRef.current[who]) {
+      delete cardHoldTriggeredRef.current[who];
+      e.stopPropagation();
+      e.preventDefault();
+    }
+  };
+
+  const handleCardContextMenu = (who: string, e: React.MouseEvent) => {
+    if (cardPointerStartRef.current[who] || cardHoldTimersRef.current[who] || cardHoldTriggeredRef.current[who]) {
+      e.preventDefault();
     }
   };
   useEffect(() => {
@@ -401,8 +471,12 @@ export const Hud: React.FC<HudProps> = ({
           data-locked={locked ? 'true' : 'false'}
           data-planning={gameState.turnBased && gameState.phase !== 'OVER' && snake.isAlive && !locked ? 'true' : 'false'}
           onPointerDown={(e) => handleCardPointerDown(who, e)}
+          onPointerMove={(e) => handleCardPointerMove(who, e)}
           onPointerUp={(e) => handleCardPointerUp(who as 'p1' | 'p2', e)}
-          className={`relative ${getCardContainerClasses(who)} ${
+          onPointerCancel={() => handleCardPointerCancel(who)}
+          onClickCapture={(e) => handleCardClickCapture(who, e)}
+          onContextMenu={(e) => handleCardContextMenu(who, e)}
+          className={`relative select-none ${getCardContainerClasses(who)} ${
             isMultiCardSide ? 'p-2' : 'p-2.5'
           } [@media(max-height:540px)]:p-1.5 flex flex-col h-full min-h-0 overflow-hidden w-full font-mono text-[#0F380F] transition-all`}
         >
@@ -534,8 +608,12 @@ export const Hud: React.FC<HudProps> = ({
         data-locked={locked ? 'true' : 'false'}
         data-planning={gameState.turnBased && gameState.phase !== 'OVER' && snake.isAlive && !locked ? 'true' : 'false'}
         onPointerDown={(e) => handleCardPointerDown(who, e)}
+        onPointerMove={(e) => handleCardPointerMove(who, e)}
         onPointerUp={(e) => handleCardPointerUp(who as 'p1' | 'p2', e)}
-        className={`${getCardContainerClasses(who)} ${
+        onPointerCancel={() => handleCardPointerCancel(who)}
+        onClickCapture={(e) => handleCardClickCapture(who, e)}
+        onContextMenu={(e) => handleCardContextMenu(who, e)}
+        className={`select-none ${getCardContainerClasses(who)} ${
           isMultiCardSide ? 'p-2' : 'p-3'
         } [@media(max-height:540px)]:p-1.5 flex flex-col h-full min-h-0 overflow-hidden w-full font-mono text-[#0F380F] transition-all`}
       >
@@ -664,8 +742,12 @@ export const Hud: React.FC<HudProps> = ({
         data-locked={locked ? 'true' : 'false'}
         data-planning={gameState.turnBased && gameState.phase !== 'OVER' && snake.isAlive && !locked ? 'true' : 'false'}
         onPointerDown={(e) => handleCardPointerDown(who, e)}
+        onPointerMove={(e) => handleCardPointerMove(who, e)}
         onPointerUp={(e) => handleCardPointerUp(who as 'p1' | 'p2', e)}
-        className={`${getCardContainerClasses(who)} p-2 flex flex-col justify-between min-w-0 overflow-hidden transition-all`}
+        onPointerCancel={() => handleCardPointerCancel(who)}
+        onClickCapture={(e) => handleCardClickCapture(who, e)}
+        onContextMenu={(e) => handleCardContextMenu(who, e)}
+        className={`select-none ${getCardContainerClasses(who)} p-2 flex flex-col justify-between min-w-0 overflow-hidden transition-all`}
       >
         <div className="shrink-0">
           <div className="flex items-center justify-between gap-1 text-[11px] font-bold h-4">
