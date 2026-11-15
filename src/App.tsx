@@ -4363,6 +4363,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
   // Single-screen match layout: when a match (or replay) is on screen, the
   // root <main> becomes a locked viewport (100dvh, no scroll).
   const isMatchView = !inLobby && !inOnlineLobby && !localBridgeReadyPending;
+  const canOpenInGameMenu = isMatchView && gameState.phase !== 'OVER' && !replayActive && hotseatPassTo === null && hotseatPinPad === null;
   // Hotseat: the single shared control set follows the active player.
   const controlsSlot: 1 | 2 = playMode === 'LOCAL_HOTSEAT' ? (hotseatActiveSeat === 'p2' ? 2 : 1) : 1;
   const controlsSnake = gameState.snakes.find(snake => snake.id === getTargetKey(controlsSlot))!;
@@ -4392,7 +4393,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
         </div>
 
         <div className="flex items-center gap-2">
-          {!inLobby && !inOnlineLobby && !localBridgeReadyPending && gameState.phase !== 'OVER' && !replayActive && hotseatPassTo === null && hotseatPinPad === null && (
+          {canOpenInGameMenu && (
             <button
               onClick={() => setMenuOpen(true)}
               className="px-1.5 py-0.5 bg-[#9BBC0F] hover:bg-[#0F380F] hover:text-[#9BBC0F] border border-[#0F380F] cursor-pointer"
@@ -4588,12 +4589,8 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
                 canUseSkill={canUseSkillForSeat}
                 settings={settings}
                 onCardSwipe={(seat, dir) => handleDirectionInput(seat === 'p2' ? 2 : 1, dir, seat)}
-                onCardHold={() => {
+                onOpenMenu={canOpenInGameMenu ? () => {
                   if (
-                    !inLobby &&
-                    !inOnlineLobby &&
-                    !replayActive &&
-                    gameState.phase !== 'OVER' &&
                     !settingsModalOpenRef.current &&
                     !latencyModalOpenRef.current &&
                     hotseatPassToRef.current === null &&
@@ -4601,7 +4598,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
                   ) {
                     setMenuOpen(true);
                   }
-                }}
+                } : undefined}
               />
               <div className="gameboard-area relative">
                 <GameBoard
