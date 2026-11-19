@@ -269,7 +269,7 @@ export const OnlineRoomLobby: React.FC<OnlineRoomLobbyProps> = ({
             <div className="mobile-scroll-panel bg-[#8BAC0F] p-4 border-4 border-[#0F380F] flex flex-col items-center gap-2" onClick={e => e.stopPropagation()}>
               <div className="text-xs font-black uppercase">SCAN TO JOIN</div>
               <div className="bg-white p-1 border-2 border-[#0F380F]">
-                <QRCodeSVG value={`https://madonin82.github.io/snake-royale/?room=${roomId}`} size={200} level="L" />
+                <QRCodeSVG value={`https://madonin82.github.io/go-snake/?room=${roomId}`} size={200} level="L" />
               </div>
               <button onClick={() => setIsQrModalOpen(false)} className="bg-[#0F380F] text-[#9BBC0F] px-4 py-1 font-bold text-xs cursor-pointer">CLOSE</button>
             </div>
