@@ -2,7 +2,7 @@
 
 A tiny competitive Snake game for two players: race for tokens on a small board, then survive as the arena shrinks. Game Boy 4-shade looks, chess-pace turn-based multiplayer by default, and a built-in latency harness because this started life as a networking testbed that turned into a real game.
 
-**Play it:** https://madonin82.github.io/snake-royale/
+**Play it:** https://madonin82.github.io/go-snake/
 
 ## What it does now
 
