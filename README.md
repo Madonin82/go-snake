@@ -13,7 +13,7 @@ A tiny competitive Snake game for two players: race for tokens on a small board,
   - **Spectator mode:** anyone with the room code can watch a live match (watcher count shown in the lobby). No seat, no input.
 - **Display names + series score:** set an optional name (saved per browser); the room keeps a running series score (wins/draws) across rematches, and each player's cumulative think time is tracked.
 - **Move privacy:** your queued move arrows are visible only to you — opponents see "Hidden" (desktop HUD and mobile cards).
-- **Snake visuals:** 16×16 pixel sprites for Jimmy, Jessika, Annie, and Avalena, with directional heads, patterned bodies, and tapered tails on the lit Three.js arena.
+- **Snake visuals:** faceted 3D snakes on the lit Three.js arena, with heads and bodies animated between grid cells at the browser’s refresh rate. Canvas 2D uses the 16×16 pixel sprites.
 - **Match replay:** every match is recorded turn by turn. After a match, WATCH REPLAY scrubs through it at 2×/5×/10× (thinking pauses edited out). Replays include think-time data.
 - **Solo vs AI and local 2P** for same-screen or bot-sparring play.
 - **Latency harness:** a NET readout in the HUD with ping/pong probes (median + p95), plus input-to-render tick lag. Note: the ping number measures time-until-the-peer-acks, so on a slow-thinking opponent it reads huge — that's the harness being honest about a different thing than wire latency.
