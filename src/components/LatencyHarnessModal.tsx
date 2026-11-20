@@ -127,9 +127,9 @@ export const LatencyHarnessModal: React.FC<LatencyHarnessModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-xs font-mono select-none">
-      <div className="mobile-scroll-panel w-full max-w-lg max-h-[96dvh] bg-[#9BBC0F] border-4 border-[#0F380F] shadow-[6px_6px_0px_#0F380F] text-[#0F380F] p-3 flex flex-col justify-between gap-2 overflow-hidden">
+      <div className="mobile-scroll-panel w-full max-w-lg max-h-[96dvh] bg-[#132735] border-4 border-[#507582] shadow-[0_6px_16px_#050e1d80] text-[#e8f6f6] p-3 flex flex-col justify-between gap-2 overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between border-b-2 border-[#0F380F] pb-2">
+        <div className="flex items-center justify-between border-b-2 border-[#507582] pb-2">
           <div className="flex items-center gap-2 font-black text-sm uppercase tracking-wider">
             <Activity className="w-5 h-5" />
             <span>NET Latency Diagnostic Harness</span>
@@ -139,28 +139,28 @@ export const LatencyHarnessModal: React.FC<LatencyHarnessModalProps> = ({
               soundEngine.playMenuBack();
               onClose();
             }}
-            className="p-1 hover:bg-[#0F380F] hover:text-[#9BBC0F] border border-[#0F380F] cursor-pointer transition-colors"
+            className="p-1 hover:bg-[#e8f6f6] hover:text-[#132735] border border-[#507582] cursor-pointer transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Connection Status Banner */}
-        <div className="flex items-center justify-between bg-[#8BAC0F] p-2 border border-[#0F380F] text-xs">
+        <div className="flex items-center justify-between bg-[#233c4b] p-2 border border-[#507582] text-xs">
           <div>
             <span className="font-bold">STATUS: </span>
-            <span className={isConnected ? 'text-[#0F380F] font-black' : 'text-[#306230]'}>
+            <span className={isConnected ? 'text-[#e8f6f6] font-black' : 'text-[#a6c5d1]'}>
               {isConnected ? `CONNECTED (${roomId ? `ROOM: ${roomId}` : 'LOCAL WS'})` : 'STANDALONE / DISCONNECTED'}
             </span>
           </div>
           <div className="text-[11px] font-bold">
-            SEAT: <span className="bg-[#9BBC0F] px-1.5 py-0.5 border border-[#0F380F]">{role || 'LOCAL'}</span>
+            SEAT: <span className="bg-[#132735] px-1.5 py-0.5 border border-[#507582]">{role || 'LOCAL'}</span>
           </div>
         </div>
 
         {/* Main Metrics Matrix */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-          <div className="bg-[#8BAC0F] p-2 border-2 border-[#0F380F]">
+          <div className="bg-[#233c4b] p-2 border-2 border-[#507582]">
             <div className="text-[10px] font-bold uppercase opacity-80">Median RTT</div>
             <div className="text-xl font-black mt-1">
               {report.medianRtt > 0 ? `${report.medianRtt} ms` : '—'}
@@ -168,8 +168,8 @@ export const LatencyHarnessModal: React.FC<LatencyHarnessModalProps> = ({
             <div className="text-[9px] opacity-75">50th percentile</div>
           </div>
 
-          <div className="bg-[#8BAC0F] p-2 border-2 border-[#0F380F]">
-            <div className="text-[10px] font-bold uppercase text-[#0F380F] bg-[#9BBC0F] border border-[#0F380F]">
+          <div className="bg-[#233c4b] p-2 border-2 border-[#507582]">
+            <div className="text-[10px] font-bold uppercase text-[#e8f6f6] bg-[#132735] border border-[#507582]">
               P95 Tail RTT
             </div>
             <div className="text-xl font-black mt-1">
@@ -178,7 +178,7 @@ export const LatencyHarnessModal: React.FC<LatencyHarnessModalProps> = ({
             <div className="text-[9px] font-bold">95th percentile</div>
           </div>
 
-          <div className="bg-[#8BAC0F] p-2 border-2 border-[#0F380F]">
+          <div className="bg-[#233c4b] p-2 border-2 border-[#507582]">
             <div className="text-[10px] font-bold uppercase opacity-80">Jitter</div>
             <div className="text-xl font-black mt-1">
               {report.jitterMs > 0 ? `±${report.jitterMs} ms` : '—'}
@@ -186,7 +186,7 @@ export const LatencyHarnessModal: React.FC<LatencyHarnessModalProps> = ({
             <div className="text-[9px] opacity-75">Mean variance</div>
           </div>
 
-          <div className="bg-[#8BAC0F] p-2 border-2 border-[#0F380F]">
+          <div className="bg-[#233c4b] p-2 border-2 border-[#507582]">
             <div className="text-[10px] font-bold uppercase opacity-80">Input Tick Lag</div>
             <div className="text-xl font-black mt-1">
               {report.inputTickLagAvg > 0 ? `${report.inputTickLagAvg} t` : '0 t'}
@@ -196,7 +196,7 @@ export const LatencyHarnessModal: React.FC<LatencyHarnessModalProps> = ({
         </div>
 
         {/* Tail Analysis & Historical Samples Sparkline */}
-        <div className="bg-[#8BAC0F] p-2.5 border-2 border-[#0F380F] flex flex-col gap-1.5">
+        <div className="bg-[#233c4b] p-2.5 border-2 border-[#507582] flex flex-col gap-1.5">
           <div className="flex items-center justify-between text-xs font-bold">
             <span>RECENT PING SAMPLES (BURST 25)</span>
             <span className="text-[10px]">
@@ -204,7 +204,7 @@ export const LatencyHarnessModal: React.FC<LatencyHarnessModalProps> = ({
             </span>
           </div>
 
-          <div className="h-14 bg-[#9BBC0F] border border-[#0F380F] p-1 flex items-end gap-1 overflow-hidden">
+          <div className="h-14 bg-[#132735] border border-[#507582] p-1 flex items-end gap-1 overflow-hidden">
             {report.samples.length === 0 ? (
               <div className="w-full h-full flex items-center justify-center text-[10px] opacity-70">
                 Click "Run Latency Probe Burst" to collect telemetry
@@ -216,7 +216,7 @@ export const LatencyHarnessModal: React.FC<LatencyHarnessModalProps> = ({
                 return (
                   <div
                     key={idx}
-                    className="flex-1 bg-[#0F380F] hover:bg-[#306230] relative group transition-all"
+                    className="flex-1 bg-[#e8f6f6] hover:bg-[#a6c5d1] relative group transition-all"
                     style={{ height: `${heightPercent}%` }}
                     title={`Ping #${idx + 1}: ${sample.rttMs}ms`}
                   />
@@ -233,8 +233,8 @@ export const LatencyHarnessModal: React.FC<LatencyHarnessModalProps> = ({
         <div
           className={`border p-2 flex flex-col gap-1.5 transition-all ${
             currentItem === 'PRESETS'
-              ? 'bg-[#8BAC0F] border-[#0F380F] ring-2 ring-[#0F380F]'
-              : 'border-[#0F380F] bg-[#8BAC0F]'
+              ? 'bg-[#233c4b] border-[#507582] ring-2 ring-[#e8f6f6]'
+              : 'border-[#507582] bg-[#233c4b]'
           }`}
           onClick={() => setFocusIndex(items.indexOf('PRESETS'))}
         >
@@ -245,38 +245,38 @@ export const LatencyHarnessModal: React.FC<LatencyHarnessModalProps> = ({
               <span>SIMULATED NETWORK TEST MATRIX</span>
             </div>
             {currentItem === 'PRESETS' && (
-              <span className="text-[9px] bg-[#0F380F] text-[#9BBC0F] px-1 font-bold">[◄ ►] CYCLE</span>
+              <span className="text-[9px] bg-[#e8f6f6] text-[#132735] px-1 font-bold">[◄ ►] CYCLE</span>
             )}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-xs">
             <button
               onClick={() => handleApplySimulation('NONE')}
-              className={`px-2 py-1 border border-[#0F380F] font-bold text-[10px] cursor-pointer ${
-                simPreset === 'NONE' ? 'bg-[#0F380F] text-[#9BBC0F]' : 'bg-[#9BBC0F]'
+              className={`px-2 py-1 border border-[#507582] font-bold text-[10px] cursor-pointer ${
+                simPreset === 'NONE' ? 'bg-[#e8f6f6] text-[#132735]' : 'bg-[#132735]'
               }`}
             >
               Direct / LAN
             </button>
             <button
               onClick={() => handleApplySimulation('WIFI_JITTER')}
-              className={`px-2 py-1 border border-[#0F380F] font-bold text-[10px] cursor-pointer ${
-                simPreset === 'WIFI_JITTER' ? 'bg-[#0F380F] text-[#9BBC0F]' : 'bg-[#9BBC0F]'
+              className={`px-2 py-1 border border-[#507582] font-bold text-[10px] cursor-pointer ${
+                simPreset === 'WIFI_JITTER' ? 'bg-[#e8f6f6] text-[#132735]' : 'bg-[#132735]'
               }`}
             >
               Wi-Fi Jitter
             </button>
             <button
               onClick={() => handleApplySimulation('SLOW_4G')}
-              className={`px-2 py-1 border border-[#0F380F] font-bold text-[10px] cursor-pointer ${
-                simPreset === 'SLOW_4G' ? 'bg-[#0F380F] text-[#9BBC0F]' : 'bg-[#9BBC0F]'
+              className={`px-2 py-1 border border-[#507582] font-bold text-[10px] cursor-pointer ${
+                simPreset === 'SLOW_4G' ? 'bg-[#e8f6f6] text-[#132735]' : 'bg-[#132735]'
               }`}
             >
               Cellular 4G
             </button>
             <button
               onClick={() => handleApplySimulation('HIGH_LAG')}
-              className={`px-2 py-1 border border-[#0F380F] font-bold text-[10px] cursor-pointer ${
-                simPreset === 'HIGH_LAG' ? 'bg-[#0F380F] text-[#9BBC0F]' : 'bg-[#9BBC0F]'
+              className={`px-2 py-1 border border-[#507582] font-bold text-[10px] cursor-pointer ${
+                simPreset === 'HIGH_LAG' ? 'bg-[#e8f6f6] text-[#132735]' : 'bg-[#132735]'
               }`}
             >
               High Lag (300ms)
@@ -285,7 +285,7 @@ export const LatencyHarnessModal: React.FC<LatencyHarnessModalProps> = ({
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center justify-between pt-2 border-t-2 border-[#0F380F]">
+        <div className="flex items-center justify-between pt-2 border-t-2 border-[#507582]">
           <div className="flex items-center gap-1 text-[10px]">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Host-authoritative · WebRTC + RTDB fallback</span>
@@ -296,10 +296,10 @@ export const LatencyHarnessModal: React.FC<LatencyHarnessModalProps> = ({
               onClick={handleRunBurst}
               disabled={isRunningTest}
               onMouseEnter={() => setFocusIndex(items.indexOf('PROBE'))}
-              className={`flex items-center gap-1.5 px-3 py-1.5 border-2 border-[#0F380F] text-xs font-bold cursor-pointer disabled:opacity-50 transition-colors shadow-[2px_2px_0px_#0F380F] ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 border-2 border-[#507582] text-xs font-bold cursor-pointer disabled:opacity-50 transition-colors shadow-[0_2px_16px_#050e1d80] ${
                 currentItem === 'PROBE'
-                  ? 'bg-[#0F380F] text-[#9BBC0F] ring-3 ring-[#0F380F]'
-                  : 'bg-[#0F380F] hover:bg-[#306230] text-[#9BBC0F]'
+                  ? 'bg-[#e8f6f6] text-[#132735] ring-3 ring-[#e8f6f6]'
+                  : 'bg-[#e8f6f6] hover:bg-[#a6c5d1] text-[#132735]'
               }`}
             >
               {currentItem === 'PROBE' && <span className="animate-pulse">►</span>}
@@ -313,7 +313,7 @@ export const LatencyHarnessModal: React.FC<LatencyHarnessModalProps> = ({
                   <Play className="w-3.5 h-3.5 fill-current" />
                   <span>TEST LATENCY NOW</span>
                   {currentItem === 'PROBE' && (
-                    <span className="text-[9px] bg-[#9BBC0F] text-[#0F380F] px-1 font-bold">[A]</span>
+                    <span className="text-[9px] bg-[#132735] text-[#e8f6f6] px-1 font-bold">[A]</span>
                   )}
                 </>
               )}
@@ -322,7 +322,7 @@ export const LatencyHarnessModal: React.FC<LatencyHarnessModalProps> = ({
         </div>
 
         {/* Gamepad Helper Bar */}
-        <div className="text-center text-[9px] font-bold bg-[#8BAC0F] border border-[#0F380F] py-0.5 px-1 flex items-center justify-around">
+        <div className="text-center text-[9px] font-bold bg-[#233c4b] border border-[#507582] py-0.5 px-1 flex items-center justify-around">
           <span>🎮 [D-PAD] NAVIGATE</span>
           <span>[A] SELECT</span>
           <span>[B] CLOSE</span>

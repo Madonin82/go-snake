@@ -176,19 +176,19 @@ export const OnlineRoomLobby: React.FC<OnlineRoomLobbyProps> = ({
   }, [currentBtn, canStart, bothPlayersReady, onStartMatch, onOpenSettings, onOpenLatencyHarness, onLeaveRoom, buttons.length, onRegisterHandler]);
 
   return (
-    <div className="mobile-scroll-panel w-full max-w-[440px] max-h-full bg-[#9BBC0F] border-4 border-[#0F380F] shadow-[8px_8px_0px_#0F380F] text-[#0F380F] p-3 sm:p-4 font-mono select-none flex flex-col justify-between gap-2 overflow-hidden">
+    <div className="mobile-scroll-panel w-full max-w-[440px] max-h-full bg-[#132735] border-4 border-[#507582] shadow-[0_8px_16px_#050e1d80] text-[#e8f6f6] p-3 sm:p-4 font-mono select-none flex flex-col justify-between gap-2 overflow-hidden">
       {/* Top bar */}
-      <div className="flex items-center justify-between border-b-2 border-[#0F380F] pb-2">
+      <div className="flex items-center justify-between border-b-2 border-[#507582] pb-2">
         <button
           onClick={() => {
             soundEngine.playMenuBack();
             onLeaveRoom();
           }}
           onMouseEnter={() => setFocusIndex(buttons.indexOf('LEAVE'))}
-          className={`flex items-center gap-1 px-2 py-1 border border-[#0F380F] text-xs font-bold cursor-pointer transition-colors ${
+          className={`flex items-center gap-1 px-2 py-1 border border-[#507582] text-xs font-bold cursor-pointer transition-colors ${
             currentBtn === 'LEAVE'
-              ? 'bg-[#0F380F] text-[#9BBC0F] ring-2 ring-[#0F380F]'
-              : 'bg-[#8BAC0F] hover:bg-[#0F380F] hover:text-[#9BBC0F]'
+              ? 'bg-[#e8f6f6] text-[#132735] ring-2 ring-[#e8f6f6]'
+              : 'bg-[#233c4b] hover:bg-[#e8f6f6] hover:text-[#132735]'
           }`}
         >
           {currentBtn === 'LEAVE' && <span className="animate-pulse">►</span>}
@@ -203,10 +203,10 @@ export const OnlineRoomLobby: React.FC<OnlineRoomLobbyProps> = ({
               onOpenSettings?.();
             }}
             onMouseEnter={() => setFocusIndex(buttons.indexOf('SETTINGS'))}
-            className={`flex items-center gap-1 px-2 py-1 border border-[#0F380F] text-xs font-bold cursor-pointer transition-colors ${
+            className={`flex items-center gap-1 px-2 py-1 border border-[#507582] text-xs font-bold cursor-pointer transition-colors ${
               currentBtn === 'SETTINGS'
-                ? 'bg-[#0F380F] text-[#9BBC0F] ring-2 ring-[#0F380F]'
-                : 'bg-[#8BAC0F] hover:bg-[#0F380F] hover:text-[#9BBC0F]'
+                ? 'bg-[#e8f6f6] text-[#132735] ring-2 ring-[#e8f6f6]'
+                : 'bg-[#233c4b] hover:bg-[#e8f6f6] hover:text-[#132735]'
             }`}
           >
             {currentBtn === 'SETTINGS' && <span className="animate-pulse">►</span>}
@@ -220,10 +220,10 @@ export const OnlineRoomLobby: React.FC<OnlineRoomLobbyProps> = ({
               onOpenLatencyHarness();
             }}
             onMouseEnter={() => setFocusIndex(buttons.indexOf('HARNESS'))}
-            className={`flex items-center gap-1 px-2 py-1 border border-[#0F380F] text-xs font-bold cursor-pointer transition-colors ${
+            className={`flex items-center gap-1 px-2 py-1 border border-[#507582] text-xs font-bold cursor-pointer transition-colors ${
               currentBtn === 'HARNESS'
-                ? 'bg-[#0F380F] text-[#9BBC0F] ring-2 ring-[#0F380F]'
-                : 'bg-[#8BAC0F] hover:bg-[#0F380F] hover:text-[#9BBC0F]'
+                ? 'bg-[#e8f6f6] text-[#132735] ring-2 ring-[#e8f6f6]'
+                : 'bg-[#233c4b] hover:bg-[#e8f6f6] hover:text-[#132735]'
             }`}
           >
             {currentBtn === 'HARNESS' && <span className="animate-pulse">►</span>}
@@ -237,8 +237,8 @@ export const OnlineRoomLobby: React.FC<OnlineRoomLobbyProps> = ({
       <div
         className={`p-2.5 border-2 transition-all text-center flex flex-col items-center gap-1.5 ${
           currentBtn === 'COPY'
-            ? 'bg-[#8BAC0F] border-[#0F380F] ring-2 ring-[#0F380F]'
-            : 'bg-[#8BAC0F] border-[#0F380F]'
+            ? 'bg-[#233c4b] border-[#507582] ring-2 ring-[#e8f6f6]'
+            : 'bg-[#233c4b] border-[#507582]'
         }`}
         onClick={handleCopy}
       >
@@ -247,18 +247,18 @@ export const OnlineRoomLobby: React.FC<OnlineRoomLobbyProps> = ({
           ROOM CODE (SHARE WITH OPPONENT):
         </div>
         <div className="flex items-center justify-center gap-2">
-          <span className="text-3xl font-black tracking-widest bg-[#9BBC0F] px-4 py-0.5 border-2 border-[#0F380F]">
+          <span className="text-3xl font-black tracking-widest bg-[#132735] px-4 py-0.5 border-2 border-[#507582]">
             {roomId}
           </span>
           <button
             onClick={() => setIsQrModalOpen(true)}
-            className="bg-[#0F380F] hover:bg-[#306230] text-[#9BBC0F] p-2 border-2 border-[#0F380F] cursor-pointer shadow-[2px_2px_0px_#0F380F] text-xs font-bold"
+            className="bg-[#e8f6f6] hover:bg-[#a6c5d1] text-[#132735] p-2 border-2 border-[#507582] cursor-pointer shadow-[0_2px_16px_#050e1d80] text-xs font-bold"
           >
             QR CODE
           </button>
           <button
             onClick={handleCopy}
-            className="bg-[#0F380F] hover:bg-[#306230] text-[#9BBC0F] p-2 border-2 border-[#0F380F] cursor-pointer shadow-[2px_2px_0px_#0F380F]"
+            className="bg-[#e8f6f6] hover:bg-[#a6c5d1] text-[#132735] p-2 border-2 border-[#507582] cursor-pointer shadow-[0_2px_16px_#050e1d80]"
             title="Copy Code"
           >
             {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
@@ -266,33 +266,33 @@ export const OnlineRoomLobby: React.FC<OnlineRoomLobbyProps> = ({
         </div>
         {isQrModalOpen && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setIsQrModalOpen(false)}>
-            <div className="mobile-scroll-panel bg-[#8BAC0F] p-4 border-4 border-[#0F380F] flex flex-col items-center gap-2" onClick={e => e.stopPropagation()}>
+            <div className="mobile-scroll-panel bg-[#233c4b] p-4 border-4 border-[#507582] flex flex-col items-center gap-2" onClick={e => e.stopPropagation()}>
               <div className="text-xs font-black uppercase">SCAN TO JOIN</div>
-              <div className="bg-white p-1 border-2 border-[#0F380F]">
+              <div className="bg-white p-1 border-2 border-[#507582]">
                 <QRCodeSVG value={`https://madonin82.github.io/go-snake/?room=${roomId}`} size={200} level="L" />
               </div>
-              <button onClick={() => setIsQrModalOpen(false)} className="bg-[#0F380F] text-[#9BBC0F] px-4 py-1 font-bold text-xs cursor-pointer">CLOSE</button>
+              <button onClick={() => setIsQrModalOpen(false)} className="bg-[#e8f6f6] text-[#132735] px-4 py-1 font-bold text-xs cursor-pointer">CLOSE</button>
             </div>
           </div>
         )}
         {copied && <span className="text-[10px] font-bold">COPIED TO CLIPBOARD!</span>}
         {currentBtn === 'COPY' && (
-          <span className="text-[9px] bg-[#0F380F] text-[#9BBC0F] px-1 font-bold">[A] COPY</span>
+          <span className="text-[9px] bg-[#e8f6f6] text-[#132735] px-1 font-bold">[A] COPY</span>
         )}
       </div>
 
       {isHost && bridgeSecret && signedInUser && ADMIN_UIDS.includes(signedInUser.uid) && (
-        <div className="p-2.5 border-2 border-[#0F380F] bg-[#8BAC0F] text-center flex flex-col items-center gap-1.5">
+        <div className="p-2.5 border-2 border-[#507582] bg-[#233c4b] text-center flex flex-col items-center gap-1.5">
           <div className="text-[11px] font-bold uppercase tracking-wider">
             BRIDGE SECRET (SHARE WITH AI AGENT):
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xl font-black tracking-widest bg-[#9BBC0F] px-3 py-1 border-2 border-[#0F380F]">
+            <span className="text-xl font-black tracking-widest bg-[#132735] px-3 py-1 border-2 border-[#507582]">
               {bridgeSecret}
             </span>
             <button
               onClick={handleCopyBridgeSecret}
-              className="bg-[#0F380F] hover:bg-[#306230] text-[#9BBC0F] p-2 border-2 border-[#0F380F] cursor-pointer shadow-[2px_2px_0px_#0F380F]"
+              className="bg-[#e8f6f6] hover:bg-[#a6c5d1] text-[#132735] p-2 border-2 border-[#507582] cursor-pointer shadow-[0_2px_16px_#050e1d80]"
               title="Copy Bridge Secret"
             >
               {secretCopied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
@@ -303,26 +303,26 @@ export const OnlineRoomLobby: React.FC<OnlineRoomLobbyProps> = ({
       )}
 
       {/* Adopted Host Rules Banner */}
-      <div className="bg-[#8BAC0F] p-2 border-2 border-[#0F380F] flex flex-col gap-1">
+      <div className="bg-[#233c4b] p-2 border-2 border-[#507582] flex flex-col gap-1">
         <div className="flex items-center justify-between text-[10px] font-bold">
           <span className="flex items-center gap-1">
             <Settings className="w-3 h-3" />
             <span>MATCH RULES{settings.levelName ? ` · ${settings.levelName}` : ''}:</span>
           </span>
-          <span className="bg-[#0F380F] text-[#9BBC0F] px-1 py-0.5 text-[9px] font-black uppercase">
+          <span className="bg-[#e8f6f6] text-[#132735] px-1 py-0.5 text-[9px] font-black uppercase">
             {canStart ? '⚙️ HOST CONTROL' : '👑 HOST RULES ADOPTED'}
           </span>
         </div>
         <div className="grid grid-cols-3 gap-1 text-[10px] text-center font-black">
-          <div className="bg-[#9BBC0F] border border-[#0F380F] py-1">
+          <div className="bg-[#132735] border border-[#507582] py-1">
             <div className="text-[8px] opacity-75 font-semibold">GRID</div>
             <div>{settings.gridSize}×{settings.gridSize}</div>
           </div>
-          <div className="bg-[#9BBC0F] border border-[#0F380F] py-1">
+          <div className="bg-[#132735] border border-[#507582] py-1">
             <div className="text-[8px] opacity-75 font-semibold">STYLE</div>
             <div>{settings.turnBased ? `TURNS (${settings.raceTurns})` : 'REAL-TIME'}</div>
           </div>
-          <div className="bg-[#9BBC0F] border border-[#0F380F] py-1">
+          <div className="bg-[#132735] border border-[#507582] py-1">
             <div className="text-[8px] opacity-75 font-semibold">{settings.turnBased ? 'THINK TIME' : 'SPEED'}</div>
             <div>{settings.turnBased ? (settings.thinkTimeSeconds === null ? 'INFINITE' : `${settings.thinkTimeSeconds}s`) : `${settings.tickRate} TPS`}</div>
           </div>
@@ -331,14 +331,14 @@ export const OnlineRoomLobby: React.FC<OnlineRoomLobbyProps> = ({
 
       {/* DM banner */}
       {isServer && (
-        <div className="bg-[#0F380F] text-[#9BBC0F] p-2 border-2 border-[#0F380F] text-center text-[11px] font-black">
+        <div className="bg-[#e8f6f6] text-[#132735] p-2 border-2 border-[#507582] text-center text-[11px] font-black">
           🐉 DM MODE — YOU RUN THE WORLD. TWO PLAYERS TAKE THE SEATS.
         </div>
       )}
 
       {/* Spectator banner */}
       {role === 'spectator' && (
-        <div className="bg-[#0F380F] text-[#9BBC0F] p-2 border-2 border-[#0F380F] text-center text-[11px] font-black">
+        <div className="bg-[#e8f6f6] text-[#132735] p-2 border-2 border-[#507582] text-center text-[11px] font-black">
           👁 SPECTATING — YOU'RE WATCHING. THE PLAYERS CAN'T SEE YOUR INPUT (YOU HAVE NONE).
         </div>
       )}
@@ -346,10 +346,10 @@ export const OnlineRoomLobby: React.FC<OnlineRoomLobbyProps> = ({
       {/* Seat Roster */}
       <div className="grid grid-cols-2 gap-2">
         {/* Seat P1 */}
-        <div className="bg-[#8BAC0F] p-2.5 border-2 border-[#0F380F] flex flex-col gap-1">
+        <div className="bg-[#233c4b] p-2.5 border-2 border-[#507582] flex flex-col gap-1">
           <div className="text-[10px] font-bold uppercase">SEAT 1 (HOST / P1)</div>
           <div className="flex items-center gap-2 mt-1">
-            <span className="w-3 h-3 bg-[#0F380F] border border-[#0F380F]" />
+            <span className="w-3 h-3 bg-[#e8f6f6] border border-[#507582]" />
             <span className="font-black text-xs">
               {hasP1 ? (role === 'p1' ? `${playerNames.p1} (YOU)` : playerNames.p1) : 'WAITING...'}
             </span>
@@ -358,10 +358,10 @@ export const OnlineRoomLobby: React.FC<OnlineRoomLobbyProps> = ({
         </div>
 
         {/* Seat P2 */}
-        <div className="bg-[#8BAC0F] p-2.5 border-2 border-[#0F380F] flex flex-col gap-1">
+        <div className="bg-[#233c4b] p-2.5 border-2 border-[#507582] flex flex-col gap-1">
           <div className="text-[10px] font-bold uppercase">SEAT 2 (CHALLENGER / P2)</div>
           <div className="flex items-center gap-2 mt-1">
-            <span className="w-3 h-3 bg-[#306230] border border-[#0F380F]" />
+            <span className="w-3 h-3 bg-[#a6c5d1] border border-[#507582]" />
             <span className="font-black text-xs">
               {hasP2 ? (role === 'p2' ? `${playerNames.p2} (YOU)` : playerNames.p2) : 'WAITING FOR OPPONENT...'}
             </span>
@@ -379,7 +379,7 @@ export const OnlineRoomLobby: React.FC<OnlineRoomLobbyProps> = ({
 
       {/* Series scoreboard */}
       {(series.p1 + series.p2 + series.draws) > 0 && (
-        <div className="bg-[#8BAC0F] p-2 border-2 border-[#0F380F] text-center text-[11px] font-black">
+        <div className="bg-[#233c4b] p-2 border-2 border-[#507582] text-center text-[11px] font-black">
           🏆 SERIES — {playerNames.p1} {series.p1} · {playerNames.p2} {series.p2}
           {series.draws > 0 ? ` · DRAWS ${series.draws}` : ''}
         </div>
@@ -396,12 +396,12 @@ export const OnlineRoomLobby: React.FC<OnlineRoomLobbyProps> = ({
           }}
           disabled={!bothPlayersReady}
           onMouseEnter={() => setFocusIndex(buttons.indexOf('START'))}
-          className={`w-full py-2.5 border-2 border-[#0F380F] font-black text-sm flex items-center justify-center gap-2 transition-all ${
+          className={`w-full py-2.5 border-2 border-[#507582] font-black text-sm flex items-center justify-center gap-2 transition-all ${
             bothPlayersReady
               ? currentBtn === 'START'
-                ? 'bg-[#0F380F] text-[#9BBC0F] ring-4 ring-[#0F380F] scale-[1.02] cursor-pointer shadow-[3px_3px_0px_#0F380F]'
-                : 'bg-[#0F380F] hover:bg-[#306230] text-[#9BBC0F] cursor-pointer shadow-[3px_3px_0px_#0F380F]'
-              : 'bg-[#8BAC0F] text-[#0F380F]/50 border-dashed cursor-not-allowed'
+                ? 'bg-[#e8f6f6] text-[#132735] ring-4 ring-[#e8f6f6] scale-[1.02] cursor-pointer shadow-[0_3px_16px_#050e1d80]'
+                : 'bg-[#e8f6f6] hover:bg-[#a6c5d1] text-[#132735] cursor-pointer shadow-[0_3px_16px_#050e1d80]'
+              : 'bg-[#233c4b] text-[#e8f6f6]/50 border-dashed cursor-not-allowed'
           }`}
         >
           {currentBtn === 'START' && <span className="animate-pulse">►</span>}
@@ -412,13 +412,13 @@ export const OnlineRoomLobby: React.FC<OnlineRoomLobbyProps> = ({
               : `WAITING FOR ${hasP1 ? 'PLAYER 2' : 'PLAYER 1'} TO JOIN...`}
           </span>
           {bothPlayersReady && currentBtn === 'START' && (
-            <span className="text-[10px] bg-[#9BBC0F] text-[#0F380F] px-1.5 py-0.5 ml-2 font-bold">
+            <span className="text-[10px] bg-[#132735] text-[#e8f6f6] px-1.5 py-0.5 ml-2 font-bold">
               [A / START]
             </span>
           )}
         </button>
       ) : (
-        <div className="bg-[#8BAC0F] p-2.5 border border-[#0F380F] text-center text-xs font-bold">
+        <div className="bg-[#233c4b] p-2.5 border border-[#507582] text-center text-xs font-bold">
           {bothPlayersReady
             ? '✅ Ready! Waiting for Host to launch match...'
             : '⏳ Connecting to match host...'}
@@ -426,7 +426,7 @@ export const OnlineRoomLobby: React.FC<OnlineRoomLobbyProps> = ({
       )}
 
       {/* Gamepad Helper Bar */}
-      <div className="text-center text-[9px] font-bold bg-[#8BAC0F] border border-[#0F380F] py-0.5 px-1 flex items-center justify-around">
+      <div className="text-center text-[9px] font-bold bg-[#233c4b] border border-[#507582] py-0.5 px-1 flex items-center justify-around">
         <span>🎮 [D-PAD] NAVIGATE</span>
         <span>[A / START] SELECT</span>
         <span>[B] LEAVE</span>

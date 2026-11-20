@@ -502,9 +502,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-xs font-mono select-none">
-      <div className="mobile-scroll-panel w-full max-w-sm max-h-[96dvh] bg-[#9BBC0F] border-4 border-[#0F380F] shadow-[6px_6px_0px_#0F380F] text-[#0F380F] p-3 flex flex-col justify-between gap-2 overflow-hidden">
+      <div className="mobile-scroll-panel w-full max-w-sm max-h-[96dvh] bg-[#132735] border-4 border-[#507582] shadow-[0_6px_16px_#050e1d80] text-[#e8f6f6] p-3 flex flex-col justify-between gap-2 overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between border-b-2 border-[#0F380F] pb-1.5 shrink-0">
+        <div className="flex items-center justify-between border-b-2 border-[#507582] pb-1.5 shrink-0">
           <div className="flex items-center gap-2 font-black text-sm uppercase">
             <Settings className="w-4 h-4" />
             <span>GAME SETTINGS</span>
@@ -514,7 +514,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               soundEngine.playMenuBack();
               onClose();
             }}
-            className="p-1 hover:bg-[#0F380F] hover:text-[#9BBC0F] border border-[#0F380F] cursor-pointer"
+            className="p-1 hover:bg-[#e8f6f6] hover:text-[#132735] border border-[#507582] cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -522,7 +522,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Guest Adopted Rules Info Banner */}
         {!controlsOnly && isOnlineGuest && (
-          <div className="bg-[#0F380F] text-[#9BBC0F] p-1.5 border border-[#0F380F] text-[10px] font-bold text-center flex flex-col gap-0.5 shrink-0">
+          <div className="bg-[#e8f6f6] text-[#132735] p-1.5 border border-[#507582] text-[10px] font-bold text-center flex flex-col gap-0.5 shrink-0">
             <div className="font-black">👑 ADOPTED HOST MATCH RULES:</div>
             <div>
               {settings.gridSize}×{settings.gridSize} Arena • {settings.turnBased ? `Turn-Based (${settings.raceTurns} Turns, Think Time: ${settings.thinkTimeSeconds === null ? 'Infinite' : `${settings.thinkTimeSeconds}s`})` : `Real-Time (${settings.tickRate} TPS)`}
@@ -540,7 +540,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div
               className={`flex flex-col gap-1 p-1.5 border transition-all ${
                 currentRow === 'STYLE'
-                  ? 'bg-[#8BAC0F] border-[#0F380F] ring-2 ring-[#0F380F]'
+                  ? 'bg-[#233c4b] border-[#507582] ring-2 ring-[#e8f6f6]'
                   : 'border-transparent'
               }`}
               onClick={() => setFocusIndex(rows.indexOf('STYLE'))}
@@ -552,26 +552,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <span>PLAY STYLE:</span>
                 </div>
                 {currentRow === 'STYLE' && (
-                  <span className="text-[9px] bg-[#0F380F] text-[#9BBC0F] px-1 font-bold">[◄ ►] TOGGLE</span>
+                  <span className="text-[9px] bg-[#e8f6f6] text-[#132735] px-1 font-bold">[◄ ►] TOGGLE</span>
                 )}
               </div>
               <div className="grid grid-cols-2 gap-1">
                 <button
                   onClick={() => onUpdateSettings({ turnBased: true })}
-                  className={`py-1.5 border border-[#0F380F] font-black cursor-pointer ${
+                  className={`py-1.5 border border-[#507582] font-black cursor-pointer ${
                     settings.turnBased
-                      ? 'bg-[#0F380F] text-[#9BBC0F]'
-                      : 'bg-[#8BAC0F] hover:bg-[#9BBC0F]'
+                      ? 'bg-[#e8f6f6] text-[#132735]'
+                      : 'bg-[#233c4b] hover:bg-[#132735]'
                   }`}
                 >
                   TURN-BASED ★
                 </button>
                 <button
                   onClick={() => onUpdateSettings({ turnBased: false })}
-                  className={`py-1.5 border border-[#0F380F] font-black cursor-pointer ${
+                  className={`py-1.5 border border-[#507582] font-black cursor-pointer ${
                     !settings.turnBased
-                      ? 'bg-[#0F380F] text-[#9BBC0F]'
-                      : 'bg-[#8BAC0F] hover:bg-[#9BBC0F]'
+                      ? 'bg-[#e8f6f6] text-[#132735]'
+                      : 'bg-[#233c4b] hover:bg-[#132735]'
                   }`}
                 >
                   REAL-TIME
@@ -585,7 +585,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div
               className={`flex flex-col gap-1 p-1.5 border transition-all ${
                 currentRow === 'TURNS'
-                  ? 'bg-[#8BAC0F] border-[#0F380F] ring-2 ring-[#0F380F]'
+                  ? 'bg-[#233c4b] border-[#507582] ring-2 ring-[#e8f6f6]'
                   : 'border-transparent'
               }`}
               onClick={() => setFocusIndex(rows.indexOf('TURNS'))}
@@ -597,7 +597,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <span>RACE LENGTH (TURNS):</span>
                 </div>
                 {currentRow === 'TURNS' && (
-                  <span className="text-[9px] bg-[#0F380F] text-[#9BBC0F] px-1 font-bold">[◄ ►] CYCLE</span>
+                  <span className="text-[9px] bg-[#e8f6f6] text-[#132735] px-1 font-bold">[◄ ►] CYCLE</span>
                 )}
               </div>
               <div className="grid grid-cols-3 gap-1">
@@ -605,10 +605,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <button
                     key={turns}
                     onClick={() => onUpdateSettings({ raceTurns: turns })}
-                    className={`py-1 border border-[#0F380F] font-black cursor-pointer ${
+                    className={`py-1 border border-[#507582] font-black cursor-pointer ${
                       settings.raceTurns === turns
-                        ? 'bg-[#0F380F] text-[#9BBC0F]'
-                        : 'bg-[#8BAC0F] hover:bg-[#9BBC0F]'
+                        ? 'bg-[#e8f6f6] text-[#132735]'
+                        : 'bg-[#233c4b] hover:bg-[#132735]'
                     }`}
                   >
                     {turns} {turns === 90 ? '★' : ''}
@@ -623,7 +623,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div
               className={`flex flex-col gap-1 p-1.5 border transition-all ${
                 currentRow === 'SHRINK'
-                  ? 'bg-[#8BAC0F] border-[#0F380F] ring-2 ring-[#0F380F]'
+                  ? 'bg-[#233c4b] border-[#507582] ring-2 ring-[#e8f6f6]'
                   : 'border-transparent'
               }`}
               onClick={() => setFocusIndex(rows.indexOf('SHRINK'))}
@@ -635,26 +635,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <span>SHRINK PHASE:</span>
                 </div>
                 {currentRow === 'SHRINK' && (
-                  <span className="text-[9px] bg-[#0F380F] text-[#9BBC0F] px-1 font-bold">[◄ ►] TOGGLE</span>
+                  <span className="text-[9px] bg-[#e8f6f6] text-[#132735] px-1 font-bold">[◄ ►] TOGGLE</span>
                 )}
               </div>
               <div className="grid grid-cols-2 gap-1">
                 <button
                   onClick={() => onUpdateSettings({ shrinkEnabled: true })}
-                  className={`py-1 border border-[#0F380F] font-black cursor-pointer ${
+                  className={`py-1 border border-[#507582] font-black cursor-pointer ${
                     (settings.shrinkEnabled ?? true)
-                      ? 'bg-[#0F380F] text-[#9BBC0F]'
-                      : 'bg-[#8BAC0F] hover:bg-[#9BBC0F]'
+                      ? 'bg-[#e8f6f6] text-[#132735]'
+                      : 'bg-[#233c4b] hover:bg-[#132735]'
                   }`}
                 >
                   ON ★
                 </button>
                 <button
                   onClick={() => onUpdateSettings({ shrinkEnabled: false })}
-                  className={`py-1 border border-[#0F380F] font-black cursor-pointer ${
+                  className={`py-1 border border-[#507582] font-black cursor-pointer ${
                     !(settings.shrinkEnabled ?? true)
-                      ? 'bg-[#0F380F] text-[#9BBC0F]'
-                      : 'bg-[#8BAC0F] hover:bg-[#9BBC0F]'
+                      ? 'bg-[#e8f6f6] text-[#132735]'
+                      : 'bg-[#233c4b] hover:bg-[#132735]'
                   }`}
                 >
                   OFF
@@ -668,7 +668,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div
               className={`flex flex-col gap-1 p-1.5 border transition-all ${
                 currentRow === 'SHRINK_EVERY'
-                  ? 'bg-[#8BAC0F] border-[#0F380F] ring-2 ring-[#0F380F]'
+                  ? 'bg-[#233c4b] border-[#507582] ring-2 ring-[#e8f6f6]'
                   : 'border-transparent'
               }`}
               onClick={() => setFocusIndex(rows.indexOf('SHRINK_EVERY'))}
@@ -680,7 +680,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <span>RING CLOSES EVERY (TURNS):</span>
                 </div>
                 {currentRow === 'SHRINK_EVERY' && (
-                  <span className="text-[9px] bg-[#0F380F] text-[#9BBC0F] px-1 font-bold">[◄ ►] CYCLE</span>
+                  <span className="text-[9px] bg-[#e8f6f6] text-[#132735] px-1 font-bold">[◄ ►] CYCLE</span>
                 )}
               </div>
               <div className="grid grid-cols-6 gap-1">
@@ -688,10 +688,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <button
                     key={turns}
                     onClick={() => onUpdateSettings({ shrinkEveryTurns: turns })}
-                    className={`py-1 border border-[#0F380F] font-black cursor-pointer ${
+                    className={`py-1 border border-[#507582] font-black cursor-pointer ${
                       settings.shrinkEveryTurns === turns
-                        ? 'bg-[#0F380F] text-[#9BBC0F]'
-                        : 'bg-[#8BAC0F] hover:bg-[#9BBC0F]'
+                        ? 'bg-[#e8f6f6] text-[#132735]'
+                        : 'bg-[#233c4b] hover:bg-[#132735]'
                     }`}
                   >
                     {turns} {turns === 8 ? '★' : ''}
@@ -706,7 +706,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div
               className={`flex flex-col gap-1 p-1.5 border transition-all ${
                 currentRow === 'GRID'
-                  ? 'bg-[#8BAC0F] border-[#0F380F] ring-2 ring-[#0F380F]'
+                  ? 'bg-[#233c4b] border-[#507582] ring-2 ring-[#e8f6f6]'
                   : 'border-transparent'
               }`}
               onClick={() => setFocusIndex(rows.indexOf('GRID'))}
@@ -718,7 +718,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <span>ARENA GRID SIZE:</span>
                 </div>
                 {currentRow === 'GRID' && (
-                  <span className="text-[9px] bg-[#0F380F] text-[#9BBC0F] px-1 font-bold">[◄ ►] CYCLE</span>
+                  <span className="text-[9px] bg-[#e8f6f6] text-[#132735] px-1 font-bold">[◄ ►] CYCLE</span>
                 )}
               </div>
               <div className="grid grid-cols-3 gap-1">
@@ -726,10 +726,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <button
                     key={size}
                     onClick={() => onUpdateSettings({ gridSize: size })}
-                    className={`py-1 border border-[#0F380F] font-black cursor-pointer ${
+                    className={`py-1 border border-[#507582] font-black cursor-pointer ${
                       settings.gridSize === size
-                        ? 'bg-[#0F380F] text-[#9BBC0F]'
-                        : 'bg-[#8BAC0F] hover:bg-[#9BBC0F]'
+                        ? 'bg-[#e8f6f6] text-[#132735]'
+                        : 'bg-[#233c4b] hover:bg-[#132735]'
                     }`}
                   >
                     {size}×{size} {size === 8 ? '(v1)' : ''}
@@ -744,7 +744,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div
               className={`flex flex-col gap-1 p-1.5 border transition-all ${
                 currentRow === 'TICKS'
-                  ? 'bg-[#8BAC0F] border-[#0F380F] ring-2 ring-[#0F380F]'
+                  ? 'bg-[#233c4b] border-[#507582] ring-2 ring-[#e8f6f6]'
                   : 'border-transparent'
               }`}
               onClick={() => setFocusIndex(rows.indexOf('TICKS'))}
@@ -756,7 +756,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <span>GAME SPEED (TPS):</span>
                 </div>
                 {currentRow === 'TICKS' && (
-                  <span className="text-[9px] bg-[#0F380F] text-[#9BBC0F] px-1 font-bold">[◄ ►] CYCLE</span>
+                  <span className="text-[9px] bg-[#e8f6f6] text-[#132735] px-1 font-bold">[◄ ►] CYCLE</span>
                 )}
               </div>
               <div className="grid grid-cols-4 gap-1">
@@ -764,10 +764,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <button
                     key={tps}
                     onClick={() => onUpdateSettings({ tickRate: tps })}
-                    className={`py-1 border border-[#0F380F] font-black cursor-pointer ${
+                    className={`py-1 border border-[#507582] font-black cursor-pointer ${
                       settings.tickRate === tps
-                        ? 'bg-[#0F380F] text-[#9BBC0F]'
-                        : 'bg-[#8BAC0F] hover:bg-[#9BBC0F]'
+                        ? 'bg-[#e8f6f6] text-[#132735]'
+                        : 'bg-[#233c4b] hover:bg-[#132735]'
                     }`}
                   >
                     {tps} tps
@@ -782,7 +782,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div
               className={`flex flex-col gap-1 p-1.5 border transition-all ${
                 currentRow === 'THINK_TIME'
-                  ? 'bg-[#8BAC0F] border-[#0F380F] ring-2 ring-[#0F380F]'
+                  ? 'bg-[#233c4b] border-[#507582] ring-2 ring-[#e8f6f6]'
                   : 'border-transparent'
               }`}
               onClick={() => setFocusIndex(rows.indexOf('THINK_TIME'))}
@@ -794,7 +794,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <span>THINK TIME:</span>
                 </div>
                 {currentRow === 'THINK_TIME' && (
-                  <span className="text-[9px] bg-[#0F380F] text-[#9BBC0F] px-1 font-bold">[◄ ►] CYCLE</span>
+                  <span className="text-[9px] bg-[#e8f6f6] text-[#132735] px-1 font-bold">[◄ ►] CYCLE</span>
                 )}
               </div>
               <div className="grid grid-cols-4 gap-1">
@@ -807,10 +807,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <button
                     key={option.label}
                     onClick={() => onUpdateSettings({ thinkTimeSeconds: option.value })}
-                    className={`py-1 border border-[#0F380F] font-black cursor-pointer ${
+                    className={`py-1 border border-[#507582] font-black cursor-pointer ${
                       settings.thinkTimeSeconds === option.value
-                        ? 'bg-[#0F380F] text-[#9BBC0F]'
-                        : 'bg-[#8BAC0F] hover:bg-[#9BBC0F]'
+                        ? 'bg-[#e8f6f6] text-[#132735]'
+                        : 'bg-[#233c4b] hover:bg-[#132735]'
                     }`}
                   >
                     {option.label}
@@ -825,8 +825,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <div
             className={`flex items-center justify-between p-2 border transition-all ${
               currentRow === 'SOUND'
-                ? 'bg-[#8BAC0F] border-[#0F380F] ring-2 ring-[#0F380F]'
-                : 'bg-[#8BAC0F] border-[#0F380F]'
+                ? 'bg-[#233c4b] border-[#507582] ring-2 ring-[#e8f6f6]'
+                : 'bg-[#233c4b] border-[#507582]'
             }`}
             onClick={() => setFocusIndex(rows.indexOf('SOUND'))}
           >
@@ -841,8 +841,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 soundEngine.setEnabled(next);
                 onUpdateSettings({ soundEnabled: next });
               }}
-              className={`px-3 py-1 border border-[#0F380F] font-black cursor-pointer ${
-                settings.soundEnabled ? 'bg-[#0F380F] text-[#9BBC0F]' : 'bg-[#9BBC0F]'
+              className={`px-3 py-1 border border-[#507582] font-black cursor-pointer ${
+                settings.soundEnabled ? 'bg-[#e8f6f6] text-[#132735]' : 'bg-[#132735]'
               }`}
             >
               {settings.soundEnabled ? 'ON' : 'OFF'}
@@ -855,8 +855,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <div
             className={`flex items-center justify-between p-2 border transition-all ${
               currentRow === 'CRT'
-                ? 'bg-[#8BAC0F] border-[#0F380F] ring-2 ring-[#0F380F]'
-                : 'bg-[#8BAC0F] border-[#0F380F]'
+                ? 'bg-[#233c4b] border-[#507582] ring-2 ring-[#e8f6f6]'
+                : 'bg-[#233c4b] border-[#507582]'
             }`}
             onClick={() => setFocusIndex(rows.indexOf('CRT'))}
           >
@@ -867,8 +867,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
             <button
               onClick={() => onUpdateSettings({ crtFilterEnabled: !settings.crtFilterEnabled })}
-              className={`px-3 py-1 border border-[#0F380F] font-black cursor-pointer ${
-                settings.crtFilterEnabled ? 'bg-[#0F380F] text-[#9BBC0F]' : 'bg-[#9BBC0F]'
+              className={`px-3 py-1 border border-[#507582] font-black cursor-pointer ${
+                settings.crtFilterEnabled ? 'bg-[#e8f6f6] text-[#132735]' : 'bg-[#132735]'
               }`}
             >
               {settings.crtFilterEnabled ? 'ON' : 'OFF'}
@@ -881,8 +881,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div
               className={`flex flex-col gap-1 p-2 border transition-all ${
                 currentRow === 'RESET'
-                  ? 'bg-[#8BAC0F] border-[#0F380F] ring-2 ring-[#0F380F]'
-                  : 'bg-[#8BAC0F] border-[#0F380F]'
+                  ? 'bg-[#233c4b] border-[#507582] ring-2 ring-[#e8f6f6]'
+                  : 'bg-[#233c4b] border-[#507582]'
               }`}
               onClick={() => setFocusIndex(rows.indexOf('RESET'))}
             >
@@ -892,13 +892,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <span>RESTORE DEFAULTS</span>
                 </div>
                 {currentRow === 'RESET' && (
-                  <span className="text-[9px] bg-[#0F380F] text-[#9BBC0F] px-1 font-bold">
+                  <span className="text-[9px] bg-[#e8f6f6] text-[#132735] px-1 font-bold">
                     {resetArmed ? '[A] CONFIRM RESET' : '[A] ARM'}
                   </span>
                 )}
               </div>
               {resetArmed && (
-                <div className="text-[10px] font-bold text-[#0F380F]">
+                <div className="text-[10px] font-bold text-[#e8f6f6]">
                   Resets EVERY setting (match rules, bot, sound, display) to defaults. Press again to confirm.
                 </div>
               )}
@@ -907,8 +907,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   if (resetArmed) handleResetDefaults();
                   else setResetArmed(true);
                 }}
-                className={`py-1.5 border border-[#0F380F] font-black cursor-pointer ${
-                  resetArmed ? 'bg-[#0F380F] text-[#9BBC0F]' : 'bg-[#9BBC0F] hover:bg-[#8BAC0F]'
+                className={`py-1.5 border border-[#507582] font-black cursor-pointer ${
+                  resetArmed ? 'bg-[#e8f6f6] text-[#132735]' : 'bg-[#132735] hover:bg-[#233c4b]'
                 }`}
               >
                 {resetArmed ? 'YES, RESET ALL' : 'RESTORE DEFAULTS'}
@@ -920,8 +920,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <div
             className={`flex flex-col gap-1.5 p-2 border transition-all ${
               currentRow === 'CONTROLS'
-                ? 'bg-[#8BAC0F] border-[#0F380F] ring-2 ring-[#0F380F]'
-                : 'bg-[#8BAC0F] border-[#0F380F]'
+                ? 'bg-[#233c4b] border-[#507582] ring-2 ring-[#e8f6f6]'
+                : 'bg-[#233c4b] border-[#507582]'
             }`}
             onClick={() => setFocusIndex(rows.indexOf('CONTROLS'))}
           >
@@ -931,7 +931,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <span>CONTROLS GESTURES</span>
               </span>
               {currentRow === 'CONTROLS' ? (
-                <span className="text-[9px] bg-[#0F380F] text-[#9BBC0F] px-1 font-bold">[◄ ►] PICK • [A] FLIP</span>
+                <span className="text-[9px] bg-[#e8f6f6] text-[#132735] px-1 font-bold">[◄ ►] PICK • [A] FLIP</span>
               ) : (
                 <span className="text-[9px] opacity-75">DEVICE DEFAULTS</span>
               )}
@@ -948,9 +948,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       setControlSubFocus(idx);
                       onUpdateSettings({ [key]: !enabled });
                     }}
-                    className={`min-h-[44px] py-2 px-2 border border-[#0F380F] font-black flex items-center justify-between cursor-pointer ${
-                      enabled ? 'bg-[#0F380F] text-[#9BBC0F]' : 'bg-[#9BBC0F] text-[#0F380F]'
-                    }${isSubFocused ? ' ring-2 ring-[#ffffff] shadow-[2px_2px_0px_#0F380F] scale-[1.02]' : ''}`}
+                    className={`min-h-[44px] py-2 px-2 border border-[#507582] font-black flex items-center justify-between cursor-pointer ${
+                      enabled ? 'bg-[#e8f6f6] text-[#132735]' : 'bg-[#132735] text-[#e8f6f6]'
+                    }${isSubFocused ? ' ring-2 ring-[#ffffff] shadow-[0_2px_16px_#050e1d80] scale-[1.02]' : ''}`}
                   >
                     <span>{isSubFocused ? `► ${label}` : label}</span>
                     <span>{enabled ? 'ON' : 'OFF'}</span>
@@ -965,8 +965,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <div
             className={`flex flex-col gap-1.5 p-2 border transition-all ${
               currentRow === 'ACCOUNT'
-                ? 'bg-[#8BAC0F] border-[#0F380F] ring-2 ring-[#0F380F]'
-                : 'bg-[#8BAC0F] border-[#0F380F]'
+                ? 'bg-[#233c4b] border-[#507582] ring-2 ring-[#e8f6f6]'
+                : 'bg-[#233c4b] border-[#507582]'
             }`}
             onClick={() => setFocusIndex(rows.indexOf('ACCOUNT'))}
           >
@@ -980,7 +980,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </span>
                 )}
                 {isGoogleSignedIn && signedInUser && ADMIN_UIDS.includes(signedInUser.uid) && (
-                  <span className="shrink-0 bg-[#0F380F] text-[#9BBC0F] px-1 text-[9px]">ADMIN ✓</span>
+                  <span className="shrink-0 bg-[#e8f6f6] text-[#132735] px-1 text-[9px]">ADMIN ✓</span>
                 )}
               </div>
               {isGoogleSignedIn ? (
@@ -990,7 +990,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   onClick={() => {
                     void handleSignOut();
                   }}
-                  className="shrink-0 px-2 py-1 border border-[#0F380F] bg-[#9BBC0F] hover:bg-[#0F380F] hover:text-[#9BBC0F] font-black cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                  className="shrink-0 px-2 py-1 border border-[#507582] bg-[#132735] hover:bg-[#e8f6f6] hover:text-[#132735] font-black cursor-pointer disabled:cursor-wait disabled:opacity-60"
                 >
                   {authBusy ? 'PLEASE WAIT…' : 'SIGN OUT'}
                 </button>
@@ -1007,7 +1007,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   onClick={() => {
                     void handleGoogleSignIn();
                   }}
-                  className="px-2 py-1.5 border border-[#0F380F] bg-[#9BBC0F] hover:bg-[#0F380F] hover:text-[#9BBC0F] font-black text-[10px] cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                  className="px-2 py-1.5 border border-[#507582] bg-[#132735] hover:bg-[#e8f6f6] hover:text-[#132735] font-black text-[10px] cursor-pointer disabled:cursor-wait disabled:opacity-60"
                 >
                   {authBusy && !showEmailAuth ? 'PLEASE WAIT…' : 'SIGN IN WITH GOOGLE'}
                 </button>
@@ -1020,10 +1020,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     setAuthError(null);
                     setShowEmailAuth((prev) => !prev);
                   }}
-                  className={`px-2 py-1.5 border border-[#0F380F] font-black text-[10px] cursor-pointer flex items-center justify-center gap-1 disabled:cursor-wait disabled:opacity-60 ${
+                  className={`px-2 py-1.5 border border-[#507582] font-black text-[10px] cursor-pointer flex items-center justify-center gap-1 disabled:cursor-wait disabled:opacity-60 ${
                     showEmailAuth
-                      ? 'bg-[#0F380F] text-[#9BBC0F]'
-                      : 'bg-[#9BBC0F] hover:bg-[#0F380F] hover:text-[#9BBC0F]'
+                      ? 'bg-[#e8f6f6] text-[#132735]'
+                      : 'bg-[#132735] hover:bg-[#e8f6f6] hover:text-[#132735]'
                   }`}
                 >
                   <Mail className="w-3 h-3 shrink-0" />
@@ -1038,7 +1038,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   void handleEmailAuthSubmit(e);
                 }}
                 onKeyDown={(e) => e.stopPropagation()}
-                className="flex flex-col gap-1.5 mt-0.5 pt-1.5 border-t border-[#0F380F]"
+                className="flex flex-col gap-1.5 mt-0.5 pt-1.5 border-t border-[#507582]"
               >
                 {/* Mode switcher: Sign In vs Sign Up */}
                 <div className="grid grid-cols-2 gap-1">
@@ -1050,10 +1050,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       setEmailAuthMode('SIGN_IN');
                       setAuthError(null);
                     }}
-                    className={`py-1 border border-[#0F380F] font-black text-[10px] cursor-pointer ${
+                    className={`py-1 border border-[#507582] font-black text-[10px] cursor-pointer ${
                       emailAuthMode === 'SIGN_IN'
-                        ? 'bg-[#0F380F] text-[#9BBC0F]'
-                        : 'bg-[#9BBC0F] text-[#0F380F] hover:opacity-90'
+                        ? 'bg-[#e8f6f6] text-[#132735]'
+                        : 'bg-[#132735] text-[#e8f6f6] hover:opacity-90'
                     }`}
                   >
                     SIGN IN
@@ -1066,10 +1066,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       setEmailAuthMode('SIGN_UP');
                       setAuthError(null);
                     }}
-                    className={`py-1 border border-[#0F380F] font-black text-[10px] cursor-pointer ${
+                    className={`py-1 border border-[#507582] font-black text-[10px] cursor-pointer ${
                       emailAuthMode === 'SIGN_UP'
-                        ? 'bg-[#0F380F] text-[#9BBC0F]'
-                        : 'bg-[#9BBC0F] text-[#0F380F] hover:opacity-90'
+                        ? 'bg-[#e8f6f6] text-[#132735]'
+                        : 'bg-[#132735] text-[#e8f6f6] hover:opacity-90'
                     }`}
                   >
                     SIGN UP (NEW ACCOUNT)
@@ -1088,7 +1088,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     }}
                     placeholder="you@example.com"
                     disabled={authBusy}
-                    className="w-full px-2 py-1 bg-[#9BBC0F] border border-[#0F380F] text-[#0F380F] placeholder-[#306230]/70 font-mono text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#0F380F]"
+                    className="w-full px-2 py-1 bg-[#132735] border border-[#507582] text-[#e8f6f6] placeholder-[#a6c5d1]/70 font-mono text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#e8f6f6]"
                   />
                 </label>
 
@@ -1104,7 +1104,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     }}
                     placeholder={emailAuthMode === 'SIGN_UP' ? 'Min 6 characters' : 'Enter password'}
                     disabled={authBusy}
-                    className="w-full px-2 py-1 bg-[#9BBC0F] border border-[#0F380F] text-[#0F380F] placeholder-[#306230]/70 font-mono text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#0F380F]"
+                    className="w-full px-2 py-1 bg-[#132735] border border-[#507582] text-[#e8f6f6] placeholder-[#a6c5d1]/70 font-mono text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#e8f6f6]"
                   />
                 </label>
 
@@ -1128,7 +1128,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       }}
                       placeholder="Re-type password"
                       disabled={authBusy}
-                      className="w-full px-2 py-1 bg-[#9BBC0F] border border-[#0F380F] text-[#0F380F] placeholder-[#306230]/70 font-mono text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#0F380F]"
+                      className="w-full px-2 py-1 bg-[#132735] border border-[#507582] text-[#e8f6f6] placeholder-[#a6c5d1]/70 font-mono text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#e8f6f6]"
                     />
                   </label>
                 )}
@@ -1136,7 +1136,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <button
                   type="submit"
                   disabled={authBusy}
-                  className="w-full py-1.5 mt-0.5 border border-[#0F380F] bg-[#0F380F] text-[#9BBC0F] hover:bg-[#306230] font-black text-[11px] uppercase cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                  className="w-full py-1.5 mt-0.5 border border-[#507582] bg-[#e8f6f6] text-[#132735] hover:bg-[#a6c5d1] font-black text-[11px] uppercase cursor-pointer disabled:cursor-wait disabled:opacity-60"
                 >
                   {authBusy
                     ? 'PLEASE WAIT…'
@@ -1156,8 +1156,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div
               className={`flex flex-col gap-2 p-2 border transition-all ${
                 currentRow === 'ADMIN'
-                  ? 'bg-[#8BAC0F] border-[#0F380F] ring-2 ring-[#0F380F]'
-                  : 'bg-[#8BAC0F] border-[#0F380F]'
+                  ? 'bg-[#233c4b] border-[#507582] ring-2 ring-[#e8f6f6]'
+                  : 'bg-[#233c4b] border-[#507582]'
               }`}
               onClick={() => setFocusIndex(rows.indexOf('ADMIN'))}
             >
@@ -1173,10 +1173,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     const timeStr = new Date(room.createdAt || room.lastActive).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                     const isConfirming = confirmDeleteRoomId === room.id;
                     return (
-                      <div key={room.id} className="bg-[#9BBC0F] border border-[#0F380F] p-1.5 flex items-center justify-between gap-2 text-[10px]">
+                      <div key={room.id} className="bg-[#132735] border border-[#507582] p-1.5 flex items-center justify-between gap-2 text-[10px]">
                         <div className="flex flex-col min-w-0">
                           <div className="font-black flex items-center gap-1.5">
-                            <span className="bg-[#0F380F] text-[#9BBC0F] px-1">{room.id}</span>
+                            <span className="bg-[#e8f6f6] text-[#132735] px-1">{room.id}</span>
                             <span className="uppercase text-[9px]">[{room.status}]</span>
                           </div>
                           <div className="text-[9px] opacity-80">
@@ -1188,13 +1188,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                             <>
                               <button
                                 onClick={() => handleDeleteRoom(room.id)}
-                                className="bg-red-700 hover:bg-red-800 text-white px-2 py-0.5 border border-[#0F380F] font-black text-[9px] cursor-pointer"
+                                className="bg-red-700 hover:bg-red-800 text-white px-2 py-0.5 border border-[#507582] font-black text-[9px] cursor-pointer"
                               >
                                 CONFIRM
                               </button>
                               <button
                                 onClick={() => setConfirmDeleteRoomId(null)}
-                                className="bg-[#0F380F] text-[#9BBC0F] px-1.5 py-0.5 border border-[#0F380F] font-bold text-[9px] cursor-pointer"
+                                className="bg-[#e8f6f6] text-[#132735] px-1.5 py-0.5 border border-[#507582] font-bold text-[9px] cursor-pointer"
                               >
                                 X
                               </button>
@@ -1202,7 +1202,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           ) : (
                             <button
                               onClick={() => setConfirmDeleteRoomId(room.id)}
-                              className="bg-[#0F380F] hover:bg-red-800 text-[#9BBC0F] px-2 py-0.5 border border-[#0F380F] font-black text-[9px] cursor-pointer flex items-center gap-1"
+                              className="bg-[#e8f6f6] hover:bg-red-800 text-[#132735] px-2 py-0.5 border border-[#507582] font-black text-[9px] cursor-pointer flex items-center gap-1"
                             >
                               <Trash2 className="w-3 h-3" />
                               <span>DELETE</span>
@@ -1225,21 +1225,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             onClose();
           }}
           onMouseEnter={() => setFocusIndex(rows.indexOf('CLOSE'))}
-          className={`w-full py-2 border-2 border-[#0F380F] font-black text-xs uppercase cursor-pointer flex items-center justify-center gap-2 transition-all ${
+          className={`w-full py-2 border-2 border-[#507582] font-black text-xs uppercase cursor-pointer flex items-center justify-center gap-2 transition-all ${
             currentRow === 'CLOSE'
-              ? 'bg-[#0F380F] text-[#9BBC0F] ring-3 ring-[#0F380F] scale-[1.02]'
-              : 'bg-[#0F380F] text-[#9BBC0F]'
+              ? 'bg-[#e8f6f6] text-[#132735] ring-3 ring-[#e8f6f6] scale-[1.02]'
+              : 'bg-[#e8f6f6] text-[#132735]'
           }`}
         >
           {currentRow === 'CLOSE' && <span className="animate-pulse">►</span>}
           <span>SAVE & CLOSE</span>
           {currentRow === 'CLOSE' && (
-            <span className="text-[9px] bg-[#9BBC0F] text-[#0F380F] px-1 font-bold">[A / B]</span>
+            <span className="text-[9px] bg-[#132735] text-[#e8f6f6] px-1 font-bold">[A / B]</span>
           )}
         </button>
 
         {/* Gamepad Helper Bar */}
-        <div className="text-center text-[9px] font-bold bg-[#8BAC0F] border border-[#0F380F] py-0.5 px-1 flex items-center justify-around">
+        <div className="text-center text-[9px] font-bold bg-[#233c4b] border border-[#507582] py-0.5 px-1 flex items-center justify-around">
           <span>🎮 [D-PAD] NAVIGATE</span>
           <span>[◄ ► / A] CHANGE</span>
           <span>[B / START] SAVE</span>
