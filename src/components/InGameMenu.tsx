@@ -132,9 +132,9 @@ export const InGameMenu: React.FC<InGameMenuProps> = ({
       role="dialog"
       aria-modal="true"
       aria-label="In-game menu"
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-[#0F380F]/90 p-4 font-mono text-[#9BBC0F]"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-[#e8f6f6]/90 p-4 font-mono text-[#132735]"
     >
-      <div className="relative w-full max-w-[340px] flex flex-col gap-3 bg-[#9BBC0F] border-4 border-[#0F380F] shadow-[6px_6px_0px_#306230] p-4 text-[#0F380F]">
+      <div className="relative w-full max-w-[340px] flex flex-col gap-3 bg-[#132735] border-4 border-[#507582] shadow-[6px_6px_0px_#a6c5d1] p-4 text-[#e8f6f6]">
         <button
           type="button"
           aria-label="Close menu"
@@ -142,7 +142,7 @@ export const InGameMenu: React.FC<InGameMenuProps> = ({
             soundEngine.playMenuBack();
             onClose();
           }}
-          className="absolute top-2.5 right-2.5 w-7 h-7 flex items-center justify-center border-2 border-[#0F380F] bg-[#8BAC0F] hover:bg-[#0F380F] hover:text-[#9BBC0F] text-[#0F380F] font-black text-sm leading-none cursor-pointer"
+          className="absolute top-2.5 right-2.5 w-7 h-7 flex items-center justify-center border-2 border-[#507582] bg-[#233c4b] hover:bg-[#e8f6f6] hover:text-[#132735] text-[#e8f6f6] font-black text-sm leading-none cursor-pointer"
         >
           ✕
         </button>
@@ -160,7 +160,7 @@ export const InGameMenu: React.FC<InGameMenuProps> = ({
             soundEngine.playMenuSelect();
             onOpenControls();
           }}
-          className={`w-full cursor-pointer py-3 bg-[#0F380F] text-[#9BBC0F] font-black text-base border-2 border-[#0F380F] shadow-[3px_3px_0px_#306230] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none${focused('controls')}`}
+          className={`w-full cursor-pointer py-3 bg-[#e8f6f6] text-[#132735] font-black text-base border-2 border-[#507582] shadow-[3px_3px_0px_#a6c5d1] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none${focused('controls')}`}
         >
           CHANGE CONTROLS
         </button>
@@ -172,8 +172,8 @@ export const InGameMenu: React.FC<InGameMenuProps> = ({
             if (quitArmed) onQuit();
             else setQuitArmed(true);
           }}
-          className={`w-full cursor-pointer py-3 font-black text-base border-2 border-[#0F380F] ${
-            quitArmed ? 'bg-red-700 text-white' : 'bg-[#9BBC0F] text-[#0F380F]'
+          className={`w-full cursor-pointer py-3 font-black text-base border-2 border-[#507582] ${
+            quitArmed ? 'bg-red-700 text-white' : 'bg-[#132735] text-[#e8f6f6]'
           }${focused('quit')}`}
         >
           {quitArmed ? 'QUIT GAME — ARE YOU SURE?' : quitLabel}
@@ -185,7 +185,7 @@ export const InGameMenu: React.FC<InGameMenuProps> = ({
               soundEngine.playMenuBack();
               setQuitArmed(false);
             }}
-            className={`w-full cursor-pointer py-2 bg-[#8BAC0F] text-[#0F380F] font-black text-sm border-2 border-[#0F380F]${focused('cancel')}`}
+            className={`w-full cursor-pointer py-2 bg-[#233c4b] text-[#e8f6f6] font-black text-sm border-2 border-[#507582]${focused('cancel')}`}
           >
             CANCEL
           </button>

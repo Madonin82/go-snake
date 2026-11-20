@@ -186,8 +186,8 @@ export const Hud: React.FC<HudProps> = ({
         onClick={() => onSkill?.(who)}
         className={`text-[8px] px-1 py-0.5 border font-black uppercase leading-none tracking-tight transition-colors ${
           usable
-            ? 'bg-[#0F380F] text-[#9BBC0F] border-[#0F380F] cursor-pointer hover:bg-[#306230] active:translate-y-0.5 shadow-[1px_1px_0px_#0F380F]'
-            : 'bg-[#306230]/50 text-[#9BBC0F]/60 border-[#0F380F]/50 cursor-not-allowed opacity-60'
+            ? 'bg-[#e8f6f6] text-[#132735] border-[#507582] cursor-pointer hover:bg-[#a6c5d1] active:translate-y-0.5 shadow-[0_1px_16px_#050e1d80]'
+            : 'bg-[#a6c5d1]/50 text-[#132735]/60 border-[#507582]/50 cursor-not-allowed opacity-60'
         }`}
         title={`Equipped Skill: ${skill.toUpperCase()} (2 SP)`}
       >
@@ -207,15 +207,15 @@ export const Hud: React.FC<HudProps> = ({
   const primaryObjective = objectiveList[0] ?? null;
 
   const topStripContent = (
-    <div className="top-strip-content h-9 [@media(max-height:540px)]:h-7 flex items-center justify-between gap-2 bg-[#8BAC0F] px-2.5 border-2 border-[#0F380F] text-xs font-bold tracking-wider w-full shadow-[2px_2px_0px_#0F380F] overflow-hidden shrink-0">
+    <div className="top-strip-content h-9 [@media(max-height:540px)]:h-7 flex items-center justify-between gap-2 bg-[#233c4b] px-2.5 border-2 border-[#507582] text-xs font-bold tracking-wider w-full shadow-[0_2px_16px_#050e1d80] overflow-hidden shrink-0">
       <div className="flex items-center gap-1.5 flex-nowrap min-w-0 overflow-hidden shrink-0">
         <span
-          className={`shrink-0 whitespace-nowrap px-1.5 py-0.5 [@media(max-height:540px)]:py-0 border border-[#0F380F] text-[10px] leading-tight ${
+          className={`shrink-0 whitespace-nowrap px-1.5 py-0.5 [@media(max-height:540px)]:py-0 border border-[#507582] text-[10px] leading-tight ${
             isRacing
-              ? 'bg-[#0F380F] text-[#9BBC0F]'
+              ? 'bg-[#e8f6f6] text-[#132735]'
               : isShrinking
-              ? 'bg-[#306230] text-[#9BBC0F] animate-pulse'
-              : 'bg-[#8BAC0F] text-[#0F380F]'
+              ? 'bg-[#a6c5d1] text-[#132735] animate-pulse'
+              : 'bg-[#233c4b] text-[#e8f6f6]'
           }`}
         >
           {gameState.phase === 'RACING'
@@ -226,7 +226,7 @@ export const Hud: React.FC<HudProps> = ({
             ? `TERRITORY: LAST SURVIVOR`
             : `MATCH OVER`}
         </span>
-        <span className="shrink-0 whitespace-nowrap text-[10px] leading-tight bg-[#9BBC0F] px-1.5 py-0.5 [@media(max-height:540px)]:py-0 border border-[#0F380F] tabular-nums">
+        <span className="shrink-0 whitespace-nowrap text-[10px] leading-tight bg-[#132735] px-1.5 py-0.5 [@media(max-height:540px)]:py-0 border border-[#507582] tabular-nums">
           {isRacing || isTerritory ? `RND ${gameState.round} (${gameState.tokens.length} 💎)` : `RING ${gameState.ringInset}`}
         </span>
       </div>
@@ -237,7 +237,7 @@ export const Hud: React.FC<HudProps> = ({
           data-testid="playtest-top-strip-center"
           className="hidden sm:flex items-center justify-center gap-1.5 min-w-0 flex-1 px-1 overflow-hidden"
         >
-          <span className="truncate px-2 py-0.5 [@media(max-height:540px)]:py-0 bg-[#9BBC0F] border border-[#0F380F] text-[10px] font-black text-[#0F380F] tabular-nums">
+          <span className="truncate px-2 py-0.5 [@media(max-height:540px)]:py-0 bg-[#132735] border border-[#507582] text-[10px] font-black text-[#e8f6f6] tabular-nums">
             {isRacing
               ? `PHASE 1: TOKEN RACE • TURN ${gameState.tick} • ${gameState.phaseTurnsRemaining} TURNS LEFT → PHASE 2 SHRINK`
               : isShrinking
@@ -245,7 +245,7 @@ export const Hud: React.FC<HudProps> = ({
               : `MATCH COMPLETE • ${gameState.tick} TURNS`}
           </span>
           {primaryObjective && (
-            <span className="hidden md:inline-flex items-center gap-1 shrink-0 px-1.5 py-0.5 [@media(max-height:540px)]:py-0 bg-[#0F380F] text-[#9BBC0F] border border-[#0F380F] text-[9px] font-black">
+            <span className="hidden md:inline-flex items-center gap-1 shrink-0 px-1.5 py-0.5 [@media(max-height:540px)]:py-0 bg-[#e8f6f6] text-[#132735] border border-[#507582] text-[9px] font-black">
               <span>{isCampaignObjectiveComplete(primaryObjective.objective, gameState, primaryObjective.index) ? '✓' : '◎'}</span>
               <span>{getCampaignObjectiveProgress(primaryObjective.objective, gameState, primaryObjective.index)}</span>
             </span>
@@ -264,21 +264,21 @@ export const Hud: React.FC<HudProps> = ({
           </span>
         )}
 
-        <div className="whitespace-nowrap text-xs md:text-sm [@media(max-height:540px)]:text-[11px] leading-tight font-black tracking-widest bg-[#9BBC0F] px-2 py-0.5 [@media(max-height:540px)]:py-0 border border-[#0F380F] tabular-nums min-w-[8.5rem] text-center">
+        <div className="whitespace-nowrap text-xs md:text-sm [@media(max-height:540px)]:text-[11px] leading-tight font-black tracking-widest bg-[#132735] px-2 py-0.5 [@media(max-height:540px)]:py-0 border border-[#507582] tabular-nums min-w-[8.5rem] text-center">
           {gameState.turnBased
             ? `TURN ${gameState.tick} • ${gameState.phase === 'RACING' ? `${gameState.phaseTurnsRemaining} LEFT` : gameState.phase === 'SHRINKING' ? `RING IN ${gameState.phaseTurnsRemaining}` : gameState.phase === 'TERRITORY' ? 'TERRITORY' : 'OVER'}`
             : `⏱️ ${formattedTime}`}
         </div>
 
         {gamepadCount > 0 && (
-          <span className="hidden sm:flex items-center gap-1 text-[10px] text-[#0F380F] font-bold bg-[#9BBC0F] px-1 border border-[#0F380F] tabular-nums">
+          <span className="hidden sm:flex items-center gap-1 text-[10px] text-[#e8f6f6] font-bold bg-[#132735] px-1 border border-[#507582] tabular-nums">
             <Gamepad className="w-3 h-3" /> {gamepadCount}
           </span>
         )}
 
         <button
           onClick={onOpenLatencyHarness}
-          className="shrink-0 flex items-center gap-1 bg-[#9BBC0F] hover:bg-[#0F380F] hover:text-[#9BBC0F] text-[#0F380F] px-2 py-0.5 [@media(max-height:540px)]:py-0 border border-[#0F380F] font-bold cursor-pointer transition-colors text-[10px] leading-tight tabular-nums"
+          className="shrink-0 flex items-center gap-1 bg-[#132735] hover:bg-[#e8f6f6] hover:text-[#132735] text-[#e8f6f6] px-2 py-0.5 [@media(max-height:540px)]:py-0 border border-[#507582] font-bold cursor-pointer transition-colors text-[10px] leading-tight tabular-nums"
           title="Open Latency Diagnostic Suite & Diagnostics"
         >
           <Activity className="w-3 h-3 shrink-0" />
@@ -298,12 +298,12 @@ export const Hud: React.FC<HudProps> = ({
     const label = isDraw ? 'DRAW' : isWinner ? '★ WIN' : '✕ LOSS';
     return (
       <span
-        className={`shrink-0 px-1.5 py-0.5 text-[10px] leading-none font-black uppercase tracking-wider border border-[#0F380F] ${
+        className={`shrink-0 px-1.5 py-0.5 text-[10px] leading-none font-black uppercase tracking-wider border border-[#507582] ${
           isWinner
-            ? 'bg-[#0F380F] text-[#9BBC0F]'
+            ? 'bg-[#e8f6f6] text-[#132735]'
             : isDraw
-            ? 'bg-[#306230] text-[#9BBC0F]'
-            : 'bg-[#8BAC0F] text-[#0F380F]'
+            ? 'bg-[#a6c5d1] text-[#132735]'
+            : 'bg-[#233c4b] text-[#e8f6f6]'
         }`}
       >
         {label}
@@ -315,20 +315,20 @@ export const Hud: React.FC<HudProps> = ({
     if (!gameState.turnBased || gameState.phase === 'OVER') return null;
     if (!isAlive) {
       return (
-        <span className="shrink-0 px-1 py-0.5 text-[9px] leading-none font-black bg-[#0F380F] text-[#9BBC0F] border border-[#0F380F]">
+        <span className="shrink-0 px-1 py-0.5 text-[9px] leading-none font-black bg-[#e8f6f6] text-[#132735] border border-[#507582]">
           ✕ OUT
         </span>
       );
     }
     if (locked) {
       return (
-        <span className="shrink-0 px-1 py-0.5 text-[9px] leading-none font-black bg-[#0F380F]/85 text-[#9BBC0F] border border-[#0F380F]">
+        <span className="shrink-0 px-1 py-0.5 text-[9px] leading-none font-black bg-[#e8f6f6]/85 text-[#132735] border border-[#507582]">
           🔒 LOCKED
         </span>
       );
     }
     return (
-      <span className="shrink-0 px-1 py-0.5 text-[9px] leading-none font-black bg-[#E0F8CF] text-[#0F380F] border border-[#0F380F]">
+      <span className="shrink-0 px-1 py-0.5 text-[9px] leading-none font-black bg-[#a2e6d5] text-[#132735] border border-[#507582]">
         ✏️ THINKING
       </span>
     );
@@ -343,15 +343,15 @@ export const Hud: React.FC<HudProps> = ({
     const isTurnActive = gameState.turnBased && gameState.phase !== 'OVER';
 
     if (!isAlive) {
-      return `bg-[#8BAC0F]/50 opacity-45 border-4 border-dashed ${palette.borderColor}`;
+      return `bg-[#233c4b]/50 opacity-45 border-4 border-dashed ${palette.borderColor}`;
     }
     if (isTurnActive && locked) {
-      return `bg-[#8BAC0F]/75 opacity-60 border-4 border-dashed ${palette.borderColor} ${palette.lockedShadow}`;
+      return `bg-[#233c4b]/75 opacity-60 border-4 border-dashed ${palette.borderColor} ${palette.lockedShadow}`;
     }
     if (isTurnActive && !locked) {
-      return `bg-[#9BBC0F] opacity-100 border-4 ${palette.borderColor} ${palette.activeHighlight}`;
+      return `bg-[#132735] opacity-100 border-4 ${palette.borderColor} ${palette.activeHighlight}`;
     }
-    return `bg-[#9BBC0F] opacity-100 border-4 ${palette.borderColor} ${palette.defaultShadow}`;
+    return `bg-[#132735] opacity-100 border-4 ${palette.borderColor} ${palette.defaultShadow}`;
   };
 
   const renderMouseHints = (who: string) => {
@@ -364,12 +364,12 @@ export const Hud: React.FC<HudProps> = ({
         type="button"
         onClick={onToggleMouseSeat}
         title="Click to switch mouse control between P1 and P2"
-        className="flex items-center gap-0.5 px-1 py-0.5 bg-[#8BAC0F] hover:bg-[#306230] hover:text-[#9BBC0F] border border-[#0F380F] shadow-[1px_1px_0px_#0F380F] active:translate-y-0.5 cursor-pointer text-[8px] leading-none shrink-0 font-bold"
+        className="flex items-center gap-0.5 px-1 py-0.5 bg-[#233c4b] hover:bg-[#a6c5d1] hover:text-[#132735] border border-[#507582] shadow-[0_1px_16px_#050e1d80] active:translate-y-0.5 cursor-pointer text-[8px] leading-none shrink-0 font-bold"
       >
         <span>{label}</span>
       </button>
     ) : (
-      <span className="flex items-center gap-0.5 px-1 py-0.5 bg-[#8BAC0F]/70 border border-[#0F380F]/50 text-[8px] leading-none shrink-0 font-bold">
+      <span className="flex items-center gap-0.5 px-1 py-0.5 bg-[#233c4b]/70 border border-[#507582]/50 text-[8px] leading-none shrink-0 font-bold">
         {label}
       </span>
     );
@@ -411,14 +411,14 @@ export const Hud: React.FC<HudProps> = ({
           onPointerCancel={() => handleCardPointerCancel(who)}
           className={`relative select-none ${getCardContainerClasses(who)} ${
             isMultiCardSide ? 'p-2' : 'p-2.5'
-          } [@media(max-height:540px)]:p-1.5 flex flex-col h-full min-h-0 overflow-hidden w-full font-mono text-[#0F380F] transition-all`}
+          } [@media(max-height:540px)]:p-1.5 flex flex-col h-full min-h-0 overflow-hidden w-full font-mono text-[#e8f6f6] transition-all`}
         >
           {/* Row 1: Identity (Color chip + Name) & Planning Status Badge */}
           <div className="shrink-0 flex items-center justify-between gap-1 text-xs [@media(max-height:540px)]:text-[11px] font-bold mb-1">
             <span className="flex items-center gap-1.5 min-w-0">
               <span
-                className={`w-3 h-3 [@media(max-height:540px)]:w-2.5 [@media(max-height:540px)]:h-2.5 shrink-0 ${palette.chipBg} inline-block border-2 border-[#0F380F] shadow-[1px_1px_0px_#0F380F]`}
-                title={`Snake color ${palette.hex}`}
+                className={`w-3 h-3 [@media(max-height:540px)]:w-2.5 [@media(max-height:540px)]:h-2.5 shrink-0 ${palette.chipBg} inline-block border-2 border-[#507582] shadow-[0_1px_16px_#050e1d80]`}
+                title={`Snake color ${palette.light}`}
               />
               <span className="truncate font-black">{snake.name}{tag ? ` ${tag}` : ''}</span>
             </span>
@@ -429,7 +429,7 @@ export const Hud: React.FC<HudProps> = ({
           </div>
 
           {/* Row 2: Primary Score Hierarchy + Secondary Stats Pill Group (LEN & SP) + Corner Skill Tag */}
-          <div className="shrink-0 flex items-end justify-between gap-1.5 mb-1.5 pb-1 border-b border-[#0F380F]/30">
+          <div className="shrink-0 flex items-end justify-between gap-1.5 mb-1.5 pb-1 border-b border-[#507582]/30">
             <div data-score-card={who} className="flex items-baseline tabular-nums leading-none">
               <span className={`${isMultiCardSide ? 'text-xl' : 'text-2xl'} [@media(max-height:540px)]:text-lg leading-none font-black`}>
                 {snake.score}
@@ -438,12 +438,12 @@ export const Hud: React.FC<HudProps> = ({
             </div>
 
             <div className="flex items-center gap-1 flex-wrap justify-end">
-              <span className="text-[9px] px-1 py-0.5 bg-[#8BAC0F]/60 border border-[#0F380F]/60 font-bold tabular-nums leading-none">
+              <span className="text-[9px] px-1 py-0.5 bg-[#233c4b]/60 border border-[#507582]/60 font-bold tabular-nums leading-none">
                 LEN {snake.body.length}
               </span>
               <span
                 data-sp-card={who}
-                className="text-[9px] px-1 py-0.5 bg-[#8BAC0F]/60 border border-[#0F380F]/60 font-bold tabular-nums leading-none"
+                className="text-[9px] px-1 py-0.5 bg-[#233c4b]/60 border border-[#507582]/60 font-bold tabular-nums leading-none"
                 title="Skill points"
               >
                 ⚡{snake.skillPoints ?? 0} SP
@@ -454,7 +454,7 @@ export const Hud: React.FC<HudProps> = ({
 
           {/* Row 3: Compact Think Timer Bar */}
           {gameState.turnBased && (
-            <div className="shrink-0 mb-1 px-1.5 py-0.5 bg-[#8BAC0F]/40 border border-[#0F380F]/70 text-[9px] font-bold flex items-center justify-between gap-1 tabular-nums leading-tight">
+            <div className="shrink-0 mb-1 px-1.5 py-0.5 bg-[#233c4b]/40 border border-[#507582]/70 text-[9px] font-bold flex items-center justify-between gap-1 tabular-nums leading-tight">
               <span className="truncate">
                 {gameState.phase === 'OVER'
                   ? gameState.winner === 'DRAW'
@@ -470,7 +470,7 @@ export const Hud: React.FC<HudProps> = ({
               </span>
               <span className="shrink-0 flex items-center gap-1.5">
                 {!locked && countdown !== null && gameState.phase !== 'OVER' && (
-                  <span className="font-black text-[#0F380F]">{countdown}s</span>
+                  <span className="font-black text-[#e8f6f6]">{countdown}s</span>
                 )}
                 <span className="opacity-80">TOT {fmtTotal(totalThink)}</span>
               </span>
@@ -478,7 +478,7 @@ export const Hud: React.FC<HudProps> = ({
           )}
 
           {/* Row 4: Move Queue Box (Opponent queues hidden during live play, revealed in replay) */}
-          <div className="flex-1 min-h-0 overflow-hidden bg-[#8BAC0F]/20 border border-dashed border-[#0F380F]/40 p-1 flex flex-col justify-start">
+          <div className="flex-1 min-h-0 overflow-hidden bg-[#233c4b]/20 border border-dashed border-[#507582]/40 p-1 flex flex-col justify-start">
             <div className="text-[9px] font-bold opacity-80 mb-0.5 flex justify-between items-center shrink-0 min-h-[16px] tabular-nums">
               <div className="flex items-center gap-1.5 min-w-0">
                 <span className="truncate">
@@ -488,7 +488,7 @@ export const Hud: React.FC<HudProps> = ({
                 </span>
                 {mouseHints?.badge}
               </div>
-              {locked && <span className="text-[8px] px-1 bg-[#0F380F] text-[#9BBC0F] shrink-0">LOCKED</span>}
+              {locked && <span className="text-[8px] px-1 bg-[#e8f6f6] text-[#132735] shrink-0">LOCKED</span>}
             </div>
             {mouseHints && (
               <div className="mb-0.5">
@@ -505,11 +505,11 @@ export const Hud: React.FC<HudProps> = ({
                   {/* Invisible chips: pixel-identical to real chips, hold 2 rows in portrait */}
                   <span
                     aria-hidden="true"
-                    className="px-1 py-0.5 text-[10px] leading-tight font-bold border border-[#0F380F] shrink-0 invisible"
+                    className="px-1 py-0.5 text-[10px] leading-tight font-bold border border-[#507582] shrink-0 invisible"
                   >↑</span>
                   <span
                     aria-hidden="true"
-                    className="px-1 py-0.5 text-[10px] leading-tight font-bold border border-[#0F380F] shrink-0 invisible portrait:inline hidden"
+                    className="px-1 py-0.5 text-[10px] leading-tight font-bold border border-[#507582] shrink-0 invisible portrait:inline hidden"
                   >↑</span>
                 </>
               ) : (
@@ -518,14 +518,14 @@ export const Hud: React.FC<HudProps> = ({
                   const arrow = dir === 'UP' ? '↑' : dir === 'DOWN' ? '↓' : dir === 'LEFT' ? '←' : '→';
                   const label = entry.type === 'rattle' ? `⚡×${entry.primes ?? 1}${arrow}` : entry.type === 'dart' ? `⚡${arrow}` : arrow;
                   return (
-                    <span key={idx} className={`px-1 py-0.5 ${palette.badgeBg} text-[10px] leading-tight font-bold border border-[#0F380F] shrink-0`}>
+                    <span key={idx} className={`px-1 py-0.5 ${palette.badgeBg} text-[10px] leading-tight font-bold border border-[#507582] shrink-0`}>
                       {label}
                     </span>
                   );
                 })
               )}
               {canSeeMoves && snake.pendingSkill && (
-                <span className={`px-1 py-0.5 ${palette.badgeBg} text-[10px] leading-tight font-bold border border-[#0F380F] shrink-0`}>
+                <span className={`px-1 py-0.5 ${palette.badgeBg} text-[10px] leading-tight font-bold border border-[#507582] shrink-0`}>
                   ⚡
                 </span>
               )}
@@ -545,14 +545,14 @@ export const Hud: React.FC<HudProps> = ({
         onPointerCancel={() => handleCardPointerCancel(who)}
         className={`select-none ${getCardContainerClasses(who)} ${
           isMultiCardSide ? 'p-2' : 'p-3'
-        } [@media(max-height:540px)]:p-1.5 flex flex-col h-full min-h-0 overflow-hidden w-full font-mono text-[#0F380F] transition-all`}
+        } [@media(max-height:540px)]:p-1.5 flex flex-col h-full min-h-0 overflow-hidden w-full font-mono text-[#e8f6f6] transition-all`}
       >
         <div className="shrink-0">
           <div className={`flex items-center justify-between gap-1 text-xs [@media(max-height:540px)]:text-[11px] font-bold ${isMultiCardSide ? 'mb-1' : 'mb-2'} [@media(max-height:540px)]:mb-1 h-4`}>
             <span className="flex items-center gap-1.5 min-w-0">
               <span
-                className={`w-3.5 h-3.5 [@media(max-height:540px)]:w-2.5 [@media(max-height:540px)]:h-2.5 shrink-0 ${palette.chipBg} inline-block border-2 border-[#0F380F] shadow-[1px_1px_0px_#0F380F]`}
-                title={`Snake color ${palette.hex}`}
+                className={`w-3.5 h-3.5 [@media(max-height:540px)]:w-2.5 [@media(max-height:540px)]:h-2.5 shrink-0 ${palette.chipBg} inline-block border-2 border-[#507582] shadow-[0_1px_16px_#050e1d80]`}
+                title={`Snake color ${palette.light}`}
               />
               <span className="truncate font-black">{snake.name}{tag ? ` ${tag}` : ''}</span>
             </span>
@@ -565,7 +565,7 @@ export const Hud: React.FC<HudProps> = ({
               <span className="text-[10px] font-semibold uppercase tracking-tight ml-1">PTS</span>
             </div>
             {snake.equippedSkill && renderSkillBadge(who, snake.equippedSkill)}
-            <span data-sp-card={who} className="text-[9px] px-1.5 py-0.5 border border-[#0F380F] font-black uppercase" title="Skill points">
+            <span data-sp-card={who} className="text-[9px] px-1.5 py-0.5 border border-[#507582] font-black uppercase" title="Skill points">
               ⚡{snake.skillPoints ?? 0}
             </span>
             {renderOutcomeBadge(who)}
@@ -573,8 +573,8 @@ export const Hud: React.FC<HudProps> = ({
           </div>
 
           {gameState.turnBased && (
-            <div className={`${isMultiCardSide ? 'mb-1 p-1 h-[40px]' : 'mb-2 p-1.5 h-[52px]'} [@media(max-height:540px)]:mb-1 [@media(max-height:540px)]:p-1 bg-[#8BAC0F]/40 border border-[#0F380F] text-xs [@media(max-height:540px)]:text-[10px] font-bold [@media(max-height:540px)]:h-[38px] flex flex-col justify-between overflow-hidden`}>
-              <div className={`flex items-center justify-between gap-1 h-5 ${locked ? 'text-[#0F380F] opacity-90' : 'text-[#0F380F] font-black'}`}>
+            <div className={`${isMultiCardSide ? 'mb-1 p-1 h-[40px]' : 'mb-2 p-1.5 h-[52px]'} [@media(max-height:540px)]:mb-1 [@media(max-height:540px)]:p-1 bg-[#233c4b]/40 border border-[#507582] text-xs [@media(max-height:540px)]:text-[10px] font-bold [@media(max-height:540px)]:h-[38px] flex flex-col justify-between overflow-hidden`}>
+              <div className={`flex items-center justify-between gap-1 h-5 ${locked ? 'text-[#e8f6f6] opacity-90' : 'text-[#e8f6f6] font-black'}`}>
                 <span className="truncate tabular-nums">
                   {gameState.phase === 'OVER'
                     ? gameState.winner === 'DRAW'
@@ -601,13 +601,13 @@ export const Hud: React.FC<HudProps> = ({
         {/* Queued move arrows list in the reserved bottom slot — the flexible
             region: fixed header rows above stay put, this absorbs the rest.
             Chips wrap; never pushes the layout taller. */}
-        <div className="flex-1 min-h-0 overflow-hidden bg-[#8BAC0F]/20 border border-dashed border-[#0F380F]/40 p-1.5 [@media(max-height:540px)]:p-1 flex flex-col justify-start">
+        <div className="flex-1 min-h-0 overflow-hidden bg-[#233c4b]/20 border border-dashed border-[#507582]/40 p-1.5 [@media(max-height:540px)]:p-1 flex flex-col justify-start">
           <div className="text-[9px] font-bold opacity-75 mb-1 flex justify-between items-center shrink-0 min-h-[16px] tabular-nums">
             <div className="flex items-center gap-1.5 min-w-0">
               <span className="truncate">{canSeeMoves ? `QUEUE (${buffer.length}/${getBufferCapacity(snake)})` : 'QUEUE'}</span>
               {mouseHints?.badge}
             </div>
-            {locked && <span className="text-[8px] px-1 bg-[#0F380F] text-[#9BBC0F] shrink-0">LOCKED</span>}
+            {locked && <span className="text-[8px] px-1 bg-[#e8f6f6] text-[#132735] shrink-0">LOCKED</span>}
           </div>
           {mouseHints && (
             <div className="mb-1">
@@ -622,11 +622,11 @@ export const Hud: React.FC<HudProps> = ({
                 {/* Invisible chips: pixel-identical to real chips, hold 2 rows in portrait */}
                 <span
                   aria-hidden="true"
-                  className="px-1 py-0.5 text-[10px] leading-tight font-bold border border-[#0F380F] shrink-0 invisible"
+                  className="px-1 py-0.5 text-[10px] leading-tight font-bold border border-[#507582] shrink-0 invisible"
                 >↑</span>
                 <span
                   aria-hidden="true"
-                  className="px-1 py-0.5 text-[10px] leading-tight font-bold border border-[#0F380F] shrink-0 invisible portrait:inline hidden"
+                  className="px-1 py-0.5 text-[10px] leading-tight font-bold border border-[#507582] shrink-0 invisible portrait:inline hidden"
                 >↑</span>
               </>
             ) : (
@@ -635,14 +635,14 @@ export const Hud: React.FC<HudProps> = ({
                 const arrow = dir === 'UP' ? '↑' : dir === 'DOWN' ? '↓' : dir === 'LEFT' ? '←' : '→';
                 const label = entry.type === 'rattle' ? `⚡×${entry.primes ?? 1}${arrow}` : entry.type === 'dart' ? `⚡${arrow}` : arrow;
                 return (
-                  <span key={idx} className={`px-1 py-0.5 ${palette.badgeBg} text-[10px] leading-tight font-bold border border-[#0F380F] shrink-0`}>
+                  <span key={idx} className={`px-1 py-0.5 ${palette.badgeBg} text-[10px] leading-tight font-bold border border-[#507582] shrink-0`}>
                     {label}
                   </span>
                 );
               })
             )}
             {canSeeMoves && snake.pendingSkill && (
-              <span className={`px-1 py-0.5 ${palette.badgeBg} text-[10px] leading-tight font-bold border border-[#0F380F] shrink-0`}>
+              <span className={`px-1 py-0.5 ${palette.badgeBg} text-[10px] leading-tight font-bold border border-[#507582] shrink-0`}>
                 ⚡
               </span>
             )}
@@ -679,7 +679,7 @@ export const Hud: React.FC<HudProps> = ({
         <div className="shrink-0">
           <div className="flex items-center justify-between gap-1 text-[11px] font-bold h-4">
             <span className="flex items-center gap-1 min-w-0">
-              <span className={`w-3 h-3 shrink-0 ${palette.chipBg} inline-block border-2 border-[#0F380F]`} />
+              <span className={`w-3 h-3 shrink-0 ${palette.chipBg} inline-block border-2 border-[#507582]`} />
               <span className="truncate font-black">{snake.name}{tag ? ` ${tag}` : ''}</span>
             </span>
             <span className="flex items-center gap-1 shrink-0">
@@ -704,13 +704,13 @@ export const Hud: React.FC<HudProps> = ({
         </div>
         {gameState.turnBased && (
           local ? (
-            <div className="mt-1.5 bg-[#8BAC0F]/40 border border-[#0F380F] px-1.5 h-7 portrait:h-auto portrait:min-h-7 portrait:max-h-[52px] portrait:overflow-y-auto flex items-center portrait:items-start justify-between gap-1 text-[9px] font-bold overflow-hidden">
+            <div className="mt-1.5 bg-[#233c4b]/40 border border-[#507582] px-1.5 h-7 portrait:h-auto portrait:min-h-7 portrait:max-h-[52px] portrait:overflow-y-auto flex items-center portrait:items-start justify-between gap-1 text-[9px] font-bold overflow-hidden">
               <div className="flex flex-wrap gap-1 content-start min-w-0">
                 <span className="shrink-0">{locked ? '🔒 ' : '✏️ '}</span>
                 {buffer.length === 0 ? (
                   <>
-                    <span aria-hidden="true" className="px-1 py-0.5 bg-[#0F380F] text-[#9BBC0F] text-[10px] font-black shrink-0 invisible">↑</span>
-                    <span aria-hidden="true" className="px-1 py-0.5 bg-[#0F380F] text-[#9BBC0F] text-[10px] font-black shrink-0 invisible portrait:inline hidden">↑</span>
+                    <span aria-hidden="true" className="px-1 py-0.5 bg-[#e8f6f6] text-[#132735] text-[10px] font-black shrink-0 invisible">↑</span>
+                    <span aria-hidden="true" className="px-1 py-0.5 bg-[#e8f6f6] text-[#132735] text-[10px] font-black shrink-0 invisible portrait:inline hidden">↑</span>
                   </>
                 ) : (
                   buffer.map((entry, idx) => {
@@ -718,7 +718,7 @@ export const Hud: React.FC<HudProps> = ({
                     const arrow = dir === 'UP' ? '↑' : dir === 'DOWN' ? '↓' : dir === 'LEFT' ? '←' : '→';
                     const label = entry.type === 'rattle' ? `⚡×${entry.primes ?? 1}${arrow}` : entry.type === 'dart' ? `⚡${arrow}` : arrow;
                     return (
-                      <span key={idx} className="px-1 py-0.5 bg-[#0F380F] text-[#9BBC0F] text-[10px] font-black shrink-0">
+                      <span key={idx} className="px-1 py-0.5 bg-[#e8f6f6] text-[#132735] text-[10px] font-black shrink-0">
                         {label}
                       </span>
                     );
@@ -731,7 +731,7 @@ export const Hud: React.FC<HudProps> = ({
               </span>
             </div>
           ) : (
-            <div className={`mt-1.5 bg-[#8BAC0F]/30 border border-[#0F380F]/60 px-1.5 h-7 flex items-center justify-between gap-1 overflow-hidden ${locked ? 'opacity-90' : 'font-black'}`}>
+            <div className={`mt-1.5 bg-[#233c4b]/30 border border-[#507582]/60 px-1.5 h-7 flex items-center justify-between gap-1 overflow-hidden ${locked ? 'opacity-90' : 'font-black'}`}>
               <span className="text-[10px] truncate tabular-nums">
                 <span className="italic opacity-80">Hidden</span>
               </span>
@@ -746,7 +746,7 @@ export const Hud: React.FC<HudProps> = ({
   };
 
   const renderMobileCards = (
-    <div className="mobile-cards-area grid grid-cols-2 gap-2 w-full font-mono text-[#0F380F] shrink-0">
+    <div className="mobile-cards-area grid grid-cols-2 gap-2 w-full font-mono text-[#e8f6f6] shrink-0">
       <div className="flex flex-col gap-2 min-w-0">
         {leftSnakes.map(snake => renderMobilePlayerCard(snake))}
       </div>
@@ -760,19 +760,19 @@ export const Hud: React.FC<HudProps> = ({
     <>
       <div className="top-strip-area relative w-full flex flex-col items-center">
         {playMode === 'LOCAL_2P' && (
-          <div data-testid="swipe-card-hint" className="absolute top-0 left-1/2 -translate-x-1/2 z-30 pointer-events-none bg-[#0F380F]/95 text-[#9BBC0F] px-2 py-0.5 text-center text-[9px] font-black font-mono border border-[#0F380F] shadow-[1px_1px_0px_#0F380F] whitespace-nowrap">
+          <div data-testid="swipe-card-hint" className="absolute top-0 left-1/2 -translate-x-1/2 z-30 pointer-events-none bg-[#e8f6f6]/95 text-[#132735] px-2 py-0.5 text-center text-[9px] font-black font-mono border border-[#507582] shadow-[0_1px_16px_#050e1d80] whitespace-nowrap">
             SWIPE YOUR CARD, NOT THE BOARD
           </div>
         )}
-        <div className="portrait-match-header hidden w-full flex-col gap-1 font-mono text-[#0F380F]">
-          <div className="flex h-8 items-center justify-between gap-1 border-2 border-[#0F380F] bg-[#8BAC0F] px-2 text-[10px] font-black tracking-tight">
+        <div className="portrait-match-header hidden w-full flex-col gap-1 font-mono text-[#e8f6f6]">
+          <div className="flex h-8 items-center justify-between gap-1 border-2 border-[#507582] bg-[#233c4b] px-2 text-[10px] font-black tracking-tight">
             <span className={`min-w-0 truncate ${isRacing ? '' : isShrinking ? 'animate-pulse' : ''}`}>
               {isRacing ? 'PHASE 1: RACE' : isShrinking ? 'PHASE 2: SHRINK' : 'MATCH OVER'}
             </span>
             <span className="shrink-0 tabular-nums">RND {gameState.round}</span>
             <span className="shrink-0 tabular-nums">TURN {gameState.tick} · {isRacing ? `${gameState.phaseTurnsRemaining} LEFT` : isShrinking ? `RING IN ${gameState.phaseTurnsRemaining}` : 'OVER'}</span>
           </div>
-          <div className="flex h-7 items-center justify-between gap-2 border-2 border-[#0F380F] bg-[#9BBC0F] px-2 text-[10px] font-bold tabular-nums">
+          <div className="flex h-7 items-center justify-between gap-2 border-2 border-[#507582] bg-[#132735] px-2 text-[10px] font-bold tabular-nums">
             <span className="shrink-0">
               {gameState.turnBased ? `THINK ${portraitCountdown ?? '∞'}${portraitCountdown === null ? '' : 's'}` : `TIME ${formattedTime}`}
             </span>
@@ -789,7 +789,7 @@ export const Hud: React.FC<HudProps> = ({
                   data-testid="portrait-menu-button"
                   aria-label="Open in-game menu"
                   title="Open In-Game Menu"
-                  className="flex shrink-0 items-center gap-1 border border-[#0F380F] bg-[#8BAC0F] hover:bg-[#0F380F] hover:text-[#9BBC0F] active:bg-[#0F380F] active:text-[#9BBC0F] px-1.5 py-0.5 font-black leading-none cursor-pointer transition-colors"
+                  className="flex shrink-0 items-center gap-1 border border-[#507582] bg-[#233c4b] hover:bg-[#e8f6f6] hover:text-[#132735] active:bg-[#e8f6f6] active:text-[#132735] px-1.5 py-0.5 font-black leading-none cursor-pointer transition-colors"
                 >
                   <Menu className="h-3 w-3 shrink-0" />
                   <span>MENU</span>
@@ -800,7 +800,7 @@ export const Hud: React.FC<HudProps> = ({
                 onClick={onOpenLatencyHarness}
                 aria-label="Open network diagnostics"
                 title="Open Latency Diagnostic Suite & Diagnostics"
-                className="flex shrink-0 items-center gap-0.5 border border-[#0F380F] bg-[#8BAC0F] hover:bg-[#0F380F] hover:text-[#9BBC0F] active:bg-[#0F380F] active:text-[#9BBC0F] px-1 py-0.5 cursor-pointer transition-colors"
+                className="flex shrink-0 items-center gap-0.5 border border-[#507582] bg-[#233c4b] hover:bg-[#e8f6f6] hover:text-[#132735] active:bg-[#e8f6f6] active:text-[#132735] px-1 py-0.5 cursor-pointer transition-colors"
               >
                 <Activity className="h-3 w-3" />
                 <Wifi className="h-2.5 w-2.5" />
@@ -810,7 +810,7 @@ export const Hud: React.FC<HudProps> = ({
         </div>
         {topStripContent}
         {objectiveList.length > 0 && (
-          <div className="w-full border-x-2 border-b-2 border-[#0F380F] bg-[#9BBC0F] px-2 py-1 font-mono text-[9px] font-bold text-[#0F380F]">
+          <div className="w-full border-x-2 border-b-2 border-[#507582] bg-[#132735] px-2 py-1 font-mono text-[9px] font-bold text-[#e8f6f6]">
             {objectiveList.map(({ objective, index }) => {
               const complete = isCampaignObjectiveComplete(objective, gameState, index);
               const icon = complete ? '✓' : gameState.phase === 'OVER' ? '✗' : '○';
@@ -825,13 +825,13 @@ export const Hud: React.FC<HudProps> = ({
         )}
       </div>
 
-      <div className="portrait-opponents hidden w-full items-center gap-1 border-2 border-[#0F380F] bg-[#9BBC0F] px-1 py-0.5 font-mono text-[10px] font-bold text-[#0F380F]">
+      <div className="portrait-opponents hidden w-full items-center gap-1 border-2 border-[#507582] bg-[#132735] px-1 py-0.5 font-mono text-[10px] font-bold text-[#e8f6f6]">
         {gameState.snakes.map((snake, idx) => {
           const who = snake.id;
           const palette = getPlayerColorPalette(snake, idx);
           return (
             <div key={who} className={`flex min-w-0 flex-1 items-center gap-1 ${isLocked(who) ? 'opacity-60' : 'opacity-100'}`}>
-              <span className={`h-2.5 w-2.5 shrink-0 border border-[#0F380F] ${palette.chipBg}`} />
+              <span className={`h-2.5 w-2.5 shrink-0 border border-[#507582] ${palette.chipBg}`} />
               <span className="min-w-0 flex-1 truncate">{snake.name}</span>
               <span data-score-card={who} className="shrink-0">{snake.score}</span>
               <span className="shrink-0 opacity-80">L{snake.body.length}</span>
@@ -861,11 +861,11 @@ export const Hud: React.FC<HudProps> = ({
             type="button"
             onClick={onP2Undo}
             disabled={!gameState.turnBased || isLocked('p2') || ((moveBuffers?.p2?.length ?? 0) === 0 && (pendingPrimesMap?.p2 ?? 0) === 0)}
-            className="shrink-0 h-9 [@media(max-height:540px)]:h-7 border-2 border-[#0F380F] bg-[#306230] px-2.5 text-[11px] font-black text-[#9BBC0F] disabled:opacity-40 cursor-pointer flex items-center justify-center"
+            className="shrink-0 h-9 [@media(max-height:540px)]:h-7 border-2 border-[#507582] bg-[#a6c5d1] px-2.5 text-[11px] font-black text-[#132735] disabled:opacity-40 cursor-pointer flex items-center justify-center"
           >
             P2 UNDO
           </button>
-          <div className="flex min-w-0 min-h-9 [@media(max-height:540px)]:min-h-7 flex-1 items-center gap-1 border-2 border-dashed border-[#0F380F] bg-[#8BAC0F] px-2 py-1 text-[10px] font-bold text-[#0F380F] tabular-nums">
+          <div className="flex min-w-0 min-h-9 [@media(max-height:540px)]:min-h-7 flex-1 items-center gap-1 border-2 border-dashed border-[#507582] bg-[#233c4b] px-2 py-1 text-[10px] font-bold text-[#e8f6f6] tabular-nums">
             <span className="shrink-0">P2 {moveBuffers?.p2?.length ?? 0}/{getBufferCapacity(gameState.snakes.find(snake => snake.id === 'p2'))}</span>
             <span className="flex min-w-0 flex-1 flex-wrap gap-0.5 content-start portrait:overflow-y-auto portrait:max-h-[44px]">
               {(moveBuffers?.p2 ?? []).map((entry, index) => {
@@ -873,7 +873,7 @@ export const Hud: React.FC<HudProps> = ({
                 const arrow = dir === 'UP' ? '↑' : dir === 'DOWN' ? '↓' : dir === 'LEFT' ? '←' : '→';
                 const label = entry.type === 'rattle' ? `⚡×${entry.primes ?? 1}${arrow}` : entry.type === 'dart' ? `⚡${arrow}` : arrow;
                 return (
-                  <span key={`${dir}-${index}`} className="shrink-0 bg-[#0F380F] px-1 py-0.5 leading-none text-[#9BBC0F]">
+                  <span key={`${dir}-${index}`} className="shrink-0 bg-[#e8f6f6] px-1 py-0.5 leading-none text-[#132735]">
                     {label}
                   </span>
                 );
@@ -882,22 +882,22 @@ export const Hud: React.FC<HudProps> = ({
                 <>
                 <span
                   aria-hidden="true"
-                  className="shrink-0 bg-[#0F380F] px-1 py-0.5 leading-none text-[#9BBC0F] invisible"
+                  className="shrink-0 bg-[#e8f6f6] px-1 py-0.5 leading-none text-[#132735] invisible"
                 >↑</span>
                 <span
                   aria-hidden="true"
-                  className="shrink-0 bg-[#0F380F] px-1 py-0.5 leading-none text-[#9BBC0F] invisible portrait:inline hidden"
+                  className="shrink-0 bg-[#e8f6f6] px-1 py-0.5 leading-none text-[#132735] invisible portrait:inline hidden"
                 >↑</span>
                 </>
               )}
             </span>
-            {isLocked('p2') && <span className="shrink-0 bg-[#0F380F] text-[#9BBC0F] px-1 py-0.5 text-[9px] leading-none">LOCKED</span>}
+            {isLocked('p2') && <span className="shrink-0 bg-[#e8f6f6] text-[#132735] px-1 py-0.5 text-[9px] leading-none">LOCKED</span>}
           </div>
           <button
             type="button"
             onClick={onP2Lock}
             disabled={!gameState.turnBased || isLocked('p2') || (moveBuffers?.p2?.length ?? 0) === 0}
-            className="shrink-0 h-9 [@media(max-height:540px)]:h-7 border-2 border-[#0F380F] bg-[#0F380F] px-2 text-[10px] font-black text-[#9BBC0F] disabled:opacity-40 cursor-pointer flex items-center justify-center"
+            className="shrink-0 h-9 [@media(max-height:540px)]:h-7 border-2 border-[#507582] bg-[#e8f6f6] px-2 text-[10px] font-black text-[#132735] disabled:opacity-40 cursor-pointer flex items-center justify-center"
           >
             P2 LOCK
           </button>

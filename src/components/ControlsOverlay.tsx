@@ -35,14 +35,14 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
     <>
     <div className="legacy-mobile-controls w-full max-w-[340px] sm:hidden flex flex-col items-center py-2 select-none">
       <div className="flex items-center justify-center gap-4">
-        <div className="relative w-36 h-36 bg-[#8BAC0F] border-2 border-[#0F380F] p-1 shadow-[2px_2px_0px_#0F380F] shrink-0">
+        <div className="relative w-36 h-36 bg-[#233c4b] border-2 border-[#507582] p-1 shadow-[0_2px_16px_#050e1d80] shrink-0">
         {/* Center pivot */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-[#306230] border border-[#0F380F]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-[#a6c5d1] border border-[#507582]" />
 
         {/* UP */}
         <button
           onClick={() => onDirection('UP')}
-          className="absolute top-1 left-1/2 -translate-x-1/2 w-11 h-11 bg-[#0F380F] active:bg-[#306230] text-[#9BBC0F] flex items-center justify-center border border-[#0F380F] cursor-pointer"
+          className="absolute top-1 left-1/2 -translate-x-1/2 w-11 h-11 bg-[#e8f6f6] active:bg-[#a6c5d1] text-[#132735] flex items-center justify-center border border-[#507582] cursor-pointer"
         >
           <ArrowUp className="w-6 h-6" />
         </button>
@@ -50,7 +50,7 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
         {/* DOWN */}
         <button
           onClick={() => onDirection('DOWN')}
-          className="absolute bottom-1 left-1/2 -translate-x-1/2 w-11 h-11 bg-[#0F380F] active:bg-[#306230] text-[#9BBC0F] flex items-center justify-center border border-[#0F380F] cursor-pointer"
+          className="absolute bottom-1 left-1/2 -translate-x-1/2 w-11 h-11 bg-[#e8f6f6] active:bg-[#a6c5d1] text-[#132735] flex items-center justify-center border border-[#507582] cursor-pointer"
         >
           <ArrowDown className="w-6 h-6" />
         </button>
@@ -58,7 +58,7 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
         {/* LEFT */}
         <button
           onClick={() => onDirection('LEFT')}
-          className="absolute left-1 top-1/2 -translate-y-1/2 w-11 h-11 bg-[#0F380F] active:bg-[#306230] text-[#9BBC0F] flex items-center justify-center border border-[#0F380F] cursor-pointer"
+          className="absolute left-1 top-1/2 -translate-y-1/2 w-11 h-11 bg-[#e8f6f6] active:bg-[#a6c5d1] text-[#132735] flex items-center justify-center border border-[#507582] cursor-pointer"
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
@@ -66,7 +66,7 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
         {/* RIGHT */}
         <button
           onClick={() => onDirection('RIGHT')}
-          className="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 bg-[#0F380F] active:bg-[#306230] text-[#9BBC0F] flex items-center justify-center border border-[#0F380F] cursor-pointer"
+          className="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 bg-[#e8f6f6] active:bg-[#a6c5d1] text-[#132735] flex items-center justify-center border border-[#507582] cursor-pointer"
         >
           <ArrowRight className="w-6 h-6" />
         </button>
@@ -79,12 +79,12 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
               type="button"
               onClick={onSkill}
               disabled={!canUseSkill && !choosingSkill && pendingPrimes === 0}
-              className={`absolute top-1 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full border-2 border-[#0F380F] flex items-center justify-center font-black text-[10px] cursor-pointer disabled:cursor-not-allowed shadow-[2px_2px_0px_#0F380F] ${
+              className={`absolute top-1 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full border-2 border-[#507582] flex items-center justify-center font-black text-[10px] cursor-pointer disabled:cursor-not-allowed shadow-[0_2px_16px_#050e1d80] ${
                 choosingSkill || pendingPrimes > 0
                   ? 'bg-[#E53935] text-white animate-pulse'
                   : canUseSkill
-                  ? 'bg-[#0F380F] text-[#9BBC0F]'
-                  : 'bg-[#306230]/50 text-[#9BBC0F]/60'
+                  ? 'bg-[#e8f6f6] text-[#132735]'
+                  : 'bg-[#a6c5d1]/50 text-[#132735]/60'
               }`}
               title={`${skillLabel} Skill`}
             >
@@ -96,7 +96,7 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
               type="button"
               onClick={onLock}
               disabled={!turnBased || locked || queue.length === 0}
-              className="absolute right-0 top-1/2 -translate-y-1/2 w-14 h-10 rounded border-2 border-[#0F380F] bg-[#0F380F] text-[#9BBC0F] text-[10px] font-black disabled:opacity-40 cursor-pointer"
+              className="absolute right-0 top-1/2 -translate-y-1/2 w-14 h-10 rounded border-2 border-[#507582] bg-[#e8f6f6] text-[#132735] text-[10px] font-black disabled:opacity-40 cursor-pointer"
               title="Lock P1's queued moves"
             >
               LOCK
@@ -106,7 +106,7 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
               type="button"
               onClick={onUnlock}
               disabled={!turnBased}
-              className="absolute right-0 top-1/2 -translate-y-1/2 w-14 h-10 rounded border-2 border-[#0F380F] bg-[#0F380F] text-[#9BBC0F] text-[10px] font-black cursor-pointer"
+              className="absolute right-0 top-1/2 -translate-y-1/2 w-14 h-10 rounded border-2 border-[#507582] bg-[#e8f6f6] text-[#132735] text-[10px] font-black cursor-pointer"
               title="Unlock and execute queued moves"
             >
               UNLOCK
@@ -114,7 +114,7 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
           ) : (
             <button
               onClick={onLock}
-              className="absolute right-1 top-1/2 -translate-y-1/2 w-13 h-13 rounded-full bg-[#0F380F] active:bg-[#306230] text-[#9BBC0F] flex items-center justify-center border-2 border-[#0F380F] cursor-pointer font-black text-base shadow-[2px_2px_0px_#306230]"
+              className="absolute right-1 top-1/2 -translate-y-1/2 w-13 h-13 rounded-full bg-[#e8f6f6] active:bg-[#a6c5d1] text-[#132735] flex items-center justify-center border-2 border-[#507582] cursor-pointer font-black text-base shadow-[2px_2px_0px_#a6c5d1]"
               title="Lock in queued moves"
             >
               A
@@ -123,7 +123,7 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
           <button
             onClick={onUndo}
             disabled={!turnBased || locked || (queue.length === 0 && pendingPrimes === 0)}
-            className="absolute bottom-1 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-[#306230] active:bg-[#0F380F] text-[#9BBC0F] flex items-center justify-center border-2 border-[#0F380F] cursor-pointer font-black text-xs shadow-[2px_2px_0px_#0F380F] disabled:opacity-40"
+            className="absolute bottom-1 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-[#a6c5d1] active:bg-[#e8f6f6] text-[#132735] flex items-center justify-center border-2 border-[#507582] cursor-pointer font-black text-xs shadow-[0_2px_16px_#050e1d80] disabled:opacity-40"
             title="Undo last queued move"
           >
             B
@@ -141,7 +141,7 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
         type="button"
         onClick={onUndo}
         disabled={!turnBased || locked || (queue.length === 0 && pendingPrimes === 0)}
-        className="shrink-0 h-9 [@media(max-height:540px)]:h-7 border-2 border-[#0F380F] bg-[#306230] px-2 text-[11px] font-black text-[#9BBC0F] disabled:opacity-40 cursor-pointer flex items-center justify-center"
+        className="shrink-0 h-9 [@media(max-height:540px)]:h-7 border-2 border-[#507582] bg-[#a6c5d1] px-2 text-[11px] font-black text-[#132735] disabled:opacity-40 cursor-pointer flex items-center justify-center"
       >
         UNDO
       </button>
@@ -150,8 +150,8 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
           type="button"
           onClick={onSkill}
           disabled={!canUseSkill && !choosingSkill && pendingPrimes === 0}
-          className={`shrink-0 h-9 [@media(max-height:540px)]:h-7 border-2 border-[#0F380F] px-2 text-[11px] font-black cursor-pointer disabled:cursor-not-allowed flex items-center justify-center ${
-            choosingSkill || pendingPrimes > 0 ? 'bg-[#E53935] text-white animate-pulse' : canUseSkill ? 'bg-[#0F380F] text-[#9BBC0F]' : 'bg-[#306230]/50 text-[#9BBC0F]/60'
+          className={`shrink-0 h-9 [@media(max-height:540px)]:h-7 border-2 border-[#507582] px-2 text-[11px] font-black cursor-pointer disabled:cursor-not-allowed flex items-center justify-center ${
+            choosingSkill || pendingPrimes > 0 ? 'bg-[#E53935] text-white animate-pulse' : canUseSkill ? 'bg-[#e8f6f6] text-[#132735]' : 'bg-[#a6c5d1]/50 text-[#132735]/60'
           }`}
           title={`Activate ${skillLabel} Skill`}
         >
@@ -160,7 +160,7 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
             : choosingSkill ? '🎯 CHOOSE DIR' : `⚡ ${skillLabel}`}
         </button>
       )}
-      <div className="flex min-w-0 min-h-9 [@media(max-height:540px)]:min-h-7 flex-1 items-center portrait:items-start gap-1 border-2 border-dashed border-[#0F380F] bg-[#8BAC0F] px-2 py-1 text-[10px] font-bold text-[#0F380F] tabular-nums portrait:overflow-y-auto portrait:max-h-[44px]">
+      <div className="flex min-w-0 min-h-9 [@media(max-height:540px)]:min-h-7 flex-1 items-center portrait:items-start gap-1 border-2 border-dashed border-[#507582] bg-[#233c4b] px-2 py-1 text-[10px] font-bold text-[#e8f6f6] tabular-nums portrait:overflow-y-auto portrait:max-h-[44px]">
         <span className="shrink-0">{localTwoPlayer ? 'P1 ' : ''}{queue.length}/{queueLimit}</span>
         <span className="flex min-w-0 flex-1 flex-wrap gap-0.5 content-start">
           {queue.map((entry, index) => {
@@ -168,7 +168,7 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
             const arrow = dir === 'UP' ? '↑' : dir === 'DOWN' ? '↓' : dir === 'LEFT' ? '←' : '→';
             const label = entry.type === 'rattle' ? `⚡×${entry.primes ?? 1}${arrow}` : entry.type === 'dart' ? `⚡${arrow}` : arrow;
             return (
-              <span key={`${dir}-${index}`} className="shrink-0 bg-[#0F380F] px-1 py-0.5 leading-none text-[#9BBC0F]">
+              <span key={`${dir}-${index}`} className="shrink-0 bg-[#e8f6f6] px-1 py-0.5 leading-none text-[#132735]">
                 {label}
               </span>
             );
@@ -177,11 +177,11 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
             <>
             <span
               aria-hidden="true"
-              className="shrink-0 bg-[#0F380F] px-1 py-0.5 leading-none text-[#9BBC0F] invisible"
+              className="shrink-0 bg-[#e8f6f6] px-1 py-0.5 leading-none text-[#132735] invisible"
             >↑</span>
             <span
               aria-hidden="true"
-              className="shrink-0 bg-[#0F380F] px-1 py-0.5 leading-none text-[#9BBC0F] invisible portrait:inline hidden"
+              className="shrink-0 bg-[#e8f6f6] px-1 py-0.5 leading-none text-[#132735] invisible portrait:inline hidden"
             >↑</span>
             </>
           )}
@@ -192,7 +192,7 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
           type="button"
           onClick={onLock}
           disabled={!turnBased || locked || queue.length === 0}
-          className="shrink-0 h-9 [@media(max-height:540px)]:h-7 border-2 border-[#0F380F] bg-[#0F380F] px-1.5 text-[10px] font-black text-[#9BBC0F] disabled:opacity-40 cursor-pointer flex items-center justify-center"
+          className="shrink-0 h-9 [@media(max-height:540px)]:h-7 border-2 border-[#507582] bg-[#e8f6f6] px-1.5 text-[10px] font-black text-[#132735] disabled:opacity-40 cursor-pointer flex items-center justify-center"
         >
           P1 LOCK
         </button>
@@ -201,7 +201,7 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
           type="button"
           onClick={onUnlock}
           disabled={!turnBased}
-          className="shrink-0 h-9 [@media(max-height:540px)]:h-7 border-2 border-[#0F380F] bg-[#0F380F] px-3 text-[11px] font-black text-[#9BBC0F] disabled:opacity-40 cursor-pointer flex items-center justify-center"
+          className="shrink-0 h-9 [@media(max-height:540px)]:h-7 border-2 border-[#507582] bg-[#e8f6f6] px-3 text-[11px] font-black text-[#132735] disabled:opacity-40 cursor-pointer flex items-center justify-center"
           title="Unlock and execute queued moves"
         >
           UNLOCK
@@ -211,7 +211,7 @@ export const ControlsOverlay: React.FC<ControlsOverlayProps> = ({
           type="button"
           onClick={onLock}
           disabled={!turnBased || locked || queue.length === 0}
-          className="shrink-0 h-9 [@media(max-height:540px)]:h-7 border-2 border-[#0F380F] bg-[#0F380F] px-3 text-[11px] font-black text-[#9BBC0F] disabled:opacity-40 cursor-pointer flex items-center justify-center"
+          className="shrink-0 h-9 [@media(max-height:540px)]:h-7 border-2 border-[#507582] bg-[#e8f6f6] px-3 text-[11px] font-black text-[#132735] disabled:opacity-40 cursor-pointer flex items-center justify-center"
         >
           LOCK
         </button>

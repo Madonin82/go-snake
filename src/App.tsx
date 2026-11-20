@@ -421,17 +421,17 @@ export const App: React.FC = () => {
     }
 
     return (
-      <div className="w-screen h-screen flex flex-col items-center justify-center bg-[#7b8860] text-[#0F380F] font-mono select-none p-4 uppercase">
-        <div className="w-full max-w-md bg-[#9BBC0F] border-4 border-[#0F380F] p-6 text-center shadow-[inset_0_0_12px_rgba(15,56,15,0.4)]">
-          <div className="text-2xl font-black mb-3 tracking-wider text-[#0F380F]">
+      <div className="w-screen h-screen flex flex-col items-center justify-center bg-[#0b1726] text-[#e8f6f6] font-mono select-none p-4 uppercase">
+        <div className="w-full max-w-md bg-[#132735] border-4 border-[#507582] p-6 text-center shadow-[inset_0_0_12px_rgba(3,12,24,0.4)]">
+          <div className="text-2xl font-black mb-3 tracking-wider text-[#e8f6f6]">
             ACCESS DENIED
           </div>
-          <div className="text-xs font-bold text-[#306230] mb-6 tracking-wide leading-relaxed">
+          <div className="text-xs font-bold text-[#a6c5d1] mb-6 tracking-wide leading-relaxed">
             THIS TOOL IS RESTRICTED TO ADMINISTRATORS.
           </div>
           <a
             href="#/"
-            className="inline-block px-4 py-2 bg-[#0F380F] text-[#9BBC0F] font-black text-xs hover:bg-[#306230] border-2 border-[#0F380F] active:translate-y-0.5"
+            className="inline-block px-4 py-2 bg-[#e8f6f6] text-[#132735] font-black text-xs hover:bg-[#a6c5d1] border-2 border-[#507582] active:translate-y-0.5"
           >
             RETURN TO GAME
           </a>
@@ -4369,34 +4369,34 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
   const controlsSnake = gameState.snakes.find(snake => snake.id === getTargetKey(controlsSlot))!;
 
   return (
-    <main className={`h-[100dvh] overflow-hidden flex flex-col items-center justify-between p-1.5 sm:p-3 [@media(max-height:500px)]:p-1 ${settings.crtFilterEnabled ? 'crt-overlay' : ''}`}>
+    <main className={`game-screen h-[100dvh] overflow-hidden flex flex-col items-center justify-between p-1.5 sm:p-3 [@media(max-height:500px)]:p-1 ${settings.crtFilterEnabled ? 'crt-overlay' : ''}`}>
       <div className="mobile-rotate-overlay hidden" role="status" aria-live="polite">
-        <div className="flex flex-col items-center gap-3 border-4 border-[#0F380F] bg-[#9BBC0F] p-6 text-center shadow-[6px_6px_0px_#0F380F]">
+        <div className="flex flex-col items-center gap-3 border-4 border-[#507582] bg-[#132735] p-6 text-center shadow-[0_6px_16px_#050e1d80]">
           <span className="text-4xl" aria-hidden="true">↻</span>
           <span className="text-xl font-black tracking-wider">PLEASE ROTATE YOUR PHONE</span>
           <span className="text-sm font-bold">SNAKE ROYALE IS DESIGNED FOR PORTRAIT PLAY</span>
         </div>
       </div>
       {/* Top Header Navbar */}
-      <header className={`${isMatchView ? 'match-header' : ''} w-full max-w-[560px] shrink-0 flex items-center justify-between py-0.5 sm:py-1 px-2 border-b-2 border-[#0F380F] text-xs font-mono font-bold [@media(max-height:500px)]:py-0.5`}>
+      <header className={`${isMatchView ? 'match-header' : ''} w-full max-w-[560px] shrink-0 flex items-center justify-between py-0.5 sm:py-1 px-2 border-b-2 border-[#507582] text-xs font-mono font-bold [@media(max-height:500px)]:py-0.5`}>
         <div className="flex items-center gap-2">
           {!inLobby && (
             <button
               onClick={handleReturnToLobby}
-              className="flex items-center gap-1 bg-[#9BBC0F] hover:bg-[#0F380F] hover:text-[#9BBC0F] px-1.5 py-0.5 border border-[#0F380F] cursor-pointer"
+              className="flex items-center gap-1 bg-[#132735] hover:bg-[#e8f6f6] hover:text-[#132735] px-1.5 py-0.5 border border-[#507582] cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>{campaignPlaytestLevel ? 'EDITOR' : 'LOBBY'}</span>
             </button>
           )}
-          <span className="tracking-wider">SNAKE ROYALE v1.0</span>
+          <span className="tracking-wider">SNAKE ROYALE</span>
         </div>
 
         <div className="flex items-center gap-2">
           {canOpenInGameMenu && (
             <button
               onClick={() => setMenuOpen(true)}
-              className="px-1.5 py-0.5 bg-[#9BBC0F] hover:bg-[#0F380F] hover:text-[#9BBC0F] border border-[#0F380F] cursor-pointer"
+              className="px-1.5 py-0.5 bg-[#132735] hover:bg-[#e8f6f6] hover:text-[#132735] border border-[#507582] cursor-pointer"
               title="Menu (P)"
             >
               MENU
@@ -4408,7 +4408,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
               soundEngine.setEnabled(next);
               setSettings(s => ({ ...s, soundEnabled: next }));
             }}
-            className="p-1 bg-[#9BBC0F] hover:bg-[#0F380F] hover:text-[#9BBC0F] border border-[#0F380F] cursor-pointer"
+            className="p-1 bg-[#132735] hover:bg-[#e8f6f6] hover:text-[#132735] border border-[#507582] cursor-pointer"
             title="Toggle Sound"
           >
             {settings.soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
@@ -4473,12 +4473,12 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
               onRegisterHandler={(h) => { activeHandlerRef.current = h; }}
             />
           ) : localBridgeReadyPending ? (
-            <div className="mobile-scroll-panel w-full max-w-[440px] max-h-full bg-[#9BBC0F] border-4 border-[#0F380F] shadow-[8px_8px_0px_#0F380F] text-[#0F380F] p-3 sm:p-4 font-mono select-none flex flex-col justify-between gap-3 overflow-hidden">
-              <div className="flex items-center justify-between border-b-2 border-[#0F380F] pb-2">
+            <div className="mobile-scroll-panel w-full max-w-[440px] max-h-full bg-[#132735] border-4 border-[#507582] shadow-[0_8px_16px_#050e1d80] text-[#e8f6f6] p-3 sm:p-4 font-mono select-none flex flex-col justify-between gap-3 overflow-hidden">
+              <div className="flex items-center justify-between border-b-2 border-[#507582] pb-2">
                 <button
                   type="button"
                   onClick={handleCancelLocalBridgeReady}
-                  className="flex items-center gap-1 px-2 py-1 border border-[#0F380F] text-xs font-bold cursor-pointer bg-[#8BAC0F] hover:bg-[#0F380F] hover:text-[#9BBC0F] transition-colors"
+                  className="flex items-center gap-1 px-2 py-1 border border-[#507582] text-xs font-bold cursor-pointer bg-[#233c4b] hover:bg-[#e8f6f6] hover:text-[#132735] transition-colors"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>BACK</span>
@@ -4488,12 +4488,12 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
                 </div>
               </div>
 
-              <div className="p-2.5 border-2 border-[#0F380F] bg-[#8BAC0F] text-center flex flex-col items-center gap-1.5">
+              <div className="p-2.5 border-2 border-[#507582] bg-[#233c4b] text-center flex flex-col items-center gap-1.5">
                 <div className="text-[11px] font-bold uppercase tracking-wider">
                   LOCAL ROOM ID (P2 AI AGENT):
                 </div>
                 <div className="flex items-center justify-center gap-2">
-                  <span className="text-2xl font-black tracking-widest bg-[#9BBC0F] px-3 py-1 border-2 border-[#0F380F]">
+                  <span className="text-2xl font-black tracking-widest bg-[#132735] px-3 py-1 border-2 border-[#507582]">
                     {localBridgeRoomId}
                   </span>
                   <button
@@ -4504,7 +4504,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
                       setLocalRoomCopied(true);
                       setTimeout(() => setLocalRoomCopied(false), 2000);
                     }}
-                    className="bg-[#0F380F] hover:bg-[#306230] text-[#9BBC0F] p-2 border-2 border-[#0F380F] cursor-pointer shadow-[2px_2px_0px_#0F380F]"
+                    className="bg-[#e8f6f6] hover:bg-[#a6c5d1] text-[#132735] p-2 border-2 border-[#507582] cursor-pointer shadow-[0_2px_16px_#050e1d80]"
                     title="Copy Room ID"
                   >
                     {localRoomCopied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
@@ -4514,12 +4514,12 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
               </div>
 
               {localBridgeSecret && (
-                <div className="p-2.5 border-2 border-[#0F380F] bg-[#8BAC0F] text-center flex flex-col items-center gap-1.5">
+                <div className="p-2.5 border-2 border-[#507582] bg-[#233c4b] text-center flex flex-col items-center gap-1.5">
                   <div className="text-[11px] font-bold uppercase tracking-wider">
                     BRIDGE SECRET (SHARE WITH AI AGENT):
                   </div>
                   <div className="flex items-center justify-center gap-2">
-                    <span className="text-xl font-black tracking-widest bg-[#9BBC0F] px-3 py-1 border-2 border-[#0F380F]">
+                    <span className="text-xl font-black tracking-widest bg-[#132735] px-3 py-1 border-2 border-[#507582]">
                       {localBridgeSecret}
                     </span>
                     <button
@@ -4530,7 +4530,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
                         setLocalSecretCopied(true);
                         setTimeout(() => setLocalSecretCopied(false), 2000);
                       }}
-                      className="bg-[#0F380F] hover:bg-[#306230] text-[#9BBC0F] p-2 border-2 border-[#0F380F] cursor-pointer shadow-[2px_2px_0px_#0F380F]"
+                      className="bg-[#e8f6f6] hover:bg-[#a6c5d1] text-[#132735] p-2 border-2 border-[#507582] cursor-pointer shadow-[0_2px_16px_#050e1d80]"
                       title="Copy Bridge Secret"
                     >
                       {localSecretCopied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
@@ -4540,18 +4540,18 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
                 </div>
               )}
 
-              <div className="bg-[#8BAC0F] p-2 border-2 border-[#0F380F] text-[10px] font-bold text-center leading-snug">
+              <div className="bg-[#233c4b] p-2 border-2 border-[#507582] text-[10px] font-bold text-center leading-snug">
                 SHARE ROOM ID &amp; SECRET WITH THE P2 AI AGENT, THEN CONFIRM READY TO START THE MATCH.
               </div>
 
               <button
                 type="button"
                 onClick={handleConfirmLocalBridgeReady}
-                className="w-full py-3 border-2 border-[#0F380F] bg-[#0F380F] hover:bg-[#306230] text-[#9BBC0F] font-black text-sm flex items-center justify-center gap-2 cursor-pointer shadow-[3px_3px_0px_#0F380F]"
+                className="w-full py-3 border-2 border-[#507582] bg-[#e8f6f6] hover:bg-[#a6c5d1] text-[#132735] font-black text-sm flex items-center justify-center gap-2 cursor-pointer shadow-[0_3px_16px_#050e1d80]"
               >
                 <Play className="w-4 h-4 fill-current" />
                 <span>CONFIRM READY</span>
-                <span className="text-[10px] bg-[#9BBC0F] text-[#0F380F] px-1.5 py-0.5 ml-1 font-bold">[A / ENTER]</span>
+                <span className="text-[10px] bg-[#132735] text-[#e8f6f6] px-1.5 py-0.5 ml-1 font-bold">[A / ENTER]</span>
               </button>
             </div>
           ) : (
@@ -4631,14 +4631,14 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
                 {!replayActive &&
                   (playMode === 'ONLINE_HOST' || playMode === 'ONLINE_SERVER') &&
                   !joinerAcknowledgedMatchStart && (
-                    <div role="status" className="absolute inset-0 bg-[#0F380F]/90 backdrop-blur-xs flex items-center justify-center p-3 z-20 font-mono text-[#9BBC0F]">
-                      <div className="bg-[#9BBC0F] border-4 border-[#0F380F] shadow-[6px_6px_0px_#0F380F] p-4 max-w-[340px] w-full text-center text-sm font-black text-[#0F380F]">
+                    <div role="status" className="absolute inset-0 bg-[#e8f6f6]/90 backdrop-blur-xs flex items-center justify-center p-3 z-20 font-mono text-[#132735]">
+                      <div className="bg-[#132735] border-4 border-[#507582] shadow-[0_6px_16px_#050e1d80] p-4 max-w-[340px] w-full text-center text-sm font-black text-[#e8f6f6]">
                         WAITING FOR PLAYER 2 TO LOAD THE MATCH...
                       </div>
                     </div>
                   )}
                 {showTurnHint && displayState.turnBased && displayState.phase !== 'OVER' && !replayActive && (
-                  <div role="status" className="absolute top-1 left-1/2 z-30 flex w-[min(20rem,calc(100%-1rem))] -translate-x-1/2 items-center justify-between gap-2 border-2 border-[#0F380F] bg-[#9BBC0F] px-2 py-1 font-mono text-[10px] font-bold text-[#0F380F] shadow-[2px_2px_0px_#0F380F]">
+                  <div role="status" className="absolute top-1 left-1/2 z-30 flex w-[min(20rem,calc(100%-1rem))] -translate-x-1/2 items-center justify-between gap-2 border-2 border-[#507582] bg-[#132735] px-2 py-1 font-mono text-[10px] font-bold text-[#e8f6f6] shadow-[0_2px_16px_#050e1d80]">
                     <span>{playMode === 'LOCAL_HOTSEAT' ? (localBridgeArmed ? 'PLAN → LOCK → WATCH' : 'MOVE → LOCK → PASS') : 'BOTH LOCK → BOARD STEPS'}</span>
                     <button
                       type="button"
@@ -4647,7 +4647,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
                         try { localStorage.setItem('snake-royale-turn-hint-dismissed', 'true'); } catch { /* private mode */ }
                       }}
                       aria-label="Dismiss move planning hint"
-                      className="shrink-0 border border-[#0F380F] px-1 leading-none"
+                      className="shrink-0 border border-[#507582] px-1 leading-none"
                     >
                       ×
                     </button>
@@ -4657,21 +4657,21 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
                   (playMode === 'ONLINE_HOST' || playMode === 'ONLINE_JOIN' || playMode === 'ONLINE_SERVER') &&
                   !((playMode === 'ONLINE_HOST' || playMode === 'ONLINE_SERVER') && !joinerAcknowledgedMatchStart) &&
                   !areBothOnlinePlayersReady(displayState.readyConfirmed) && (
-                  <div className="absolute inset-0 bg-[#0F380F]/90 backdrop-blur-xs flex flex-col items-center justify-center p-3 z-20 font-mono text-[#9BBC0F]">
-                    <div className="bg-[#9BBC0F] border-4 border-[#0F380F] shadow-[6px_6px_0px_#0F380F] p-3 sm:p-4 max-w-[340px] w-full text-center flex flex-col gap-2.5">
-                      <div className="text-xs font-black uppercase tracking-wider text-[#0F380F]">
+                  <div className="absolute inset-0 bg-[#e8f6f6]/90 backdrop-blur-xs flex flex-col items-center justify-center p-3 z-20 font-mono text-[#132735]">
+                    <div className="bg-[#132735] border-4 border-[#507582] shadow-[0_6px_16px_#050e1d80] p-3 sm:p-4 max-w-[340px] w-full text-center flex flex-col gap-2.5">
+                      <div className="text-xs font-black uppercase tracking-wider text-[#e8f6f6]">
                         🎮 MATCH READY CHECK
                       </div>
-                      <div className="text-[10px] font-bold text-[#0F380F] bg-[#8BAC0F] p-2 border-2 border-[#0F380F]">
+                      <div className="text-[10px] font-bold text-[#e8f6f6] bg-[#233c4b] p-2 border-2 border-[#507582]">
                         BOTH PLAYERS MUST CONFIRM TO START
                       </div>
 
                       <div className="flex flex-col gap-1.5 my-1">
-                        <div className={`p-2 border-2 border-[#0F380F] flex items-center justify-between text-xs font-black ${displayState.readyConfirmed?.p1 ? 'bg-[#306230] text-[#9BBC0F]' : 'bg-[#8BAC0F] text-[#0F380F]'}`}>
+                        <div className={`p-2 border-2 border-[#507582] flex items-center justify-between text-xs font-black ${displayState.readyConfirmed?.p1 ? 'bg-[#a6c5d1] text-[#132735]' : 'bg-[#233c4b] text-[#e8f6f6]'}`}>
                           <span>{playerNames.p1} (P1):</span>
                           <span>{displayState.readyConfirmed?.p1 ? '✅ READY' : '⏳ WAITING...'}</span>
                         </div>
-                        <div className={`p-2 border-2 border-[#0F380F] flex items-center justify-between text-xs font-black ${displayState.readyConfirmed?.p2 ? 'bg-[#306230] text-[#9BBC0F]' : 'bg-[#8BAC0F] text-[#0F380F]'}`}>
+                        <div className={`p-2 border-2 border-[#507582] flex items-center justify-between text-xs font-black ${displayState.readyConfirmed?.p2 ? 'bg-[#a6c5d1] text-[#132735]' : 'bg-[#233c4b] text-[#e8f6f6]'}`}>
                           <span>{playerNames.p2} (P2):</span>
                           <span>{displayState.readyConfirmed?.p2 ? '✅ READY' : '⏳ WAITING...'}</span>
                         </div>
@@ -4679,20 +4679,20 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
 
                       {!(displayState.readyConfirmed?.[onlineRole === 'p2' ? 'p2' : 'p1']) ? (
                         playMode === 'ONLINE_JOIN' && !hasAcknowledgedMatchStart ? (
-                          <div className="bg-[#8BAC0F] text-[#0F380F] p-2.5 border-2 border-[#0F380F] text-xs font-black">
+                          <div className="bg-[#233c4b] text-[#e8f6f6] p-2.5 border-2 border-[#507582] text-xs font-black">
                             SYNCING MATCH START...
                           </div>
                         ) : (
                           <button
                             onClick={handleConfirmReady}
-                            className="w-full py-2.5 bg-[#0F380F] hover:bg-[#306230] text-[#9BBC0F] border-2 border-[#0F380F] font-black text-sm cursor-pointer shadow-[3px_3px_0px_#0F380F] flex items-center justify-center gap-2 animate-pulse"
+                            className="w-full py-2.5 bg-[#e8f6f6] hover:bg-[#a6c5d1] text-[#132735] border-2 border-[#507582] font-black text-sm cursor-pointer shadow-[0_3px_16px_#050e1d80] flex items-center justify-center gap-2 animate-pulse"
                           >
                             <span>PRESS A TO START</span>
-                            <span className="text-[10px] bg-[#9BBC0F] text-[#0F380F] px-1.5 py-0.5 font-bold">[A / ENTER]</span>
+                            <span className="text-[10px] bg-[#132735] text-[#e8f6f6] px-1.5 py-0.5 font-bold">[A / ENTER]</span>
                           </button>
                         )
                       ) : (
-                        <div className="bg-[#306230] text-[#9BBC0F] p-2.5 border-2 border-[#0F380F] text-xs font-black">
+                        <div className="bg-[#a6c5d1] text-[#132735] p-2.5 border-2 border-[#507582] text-xs font-black">
                           ✅ YOU ARE READY! WAITING FOR OPPONENT...
                         </div>
                       )}
@@ -4704,7 +4704,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
                 {!replayActive && playMode === 'LOCAL_HOTSEAT' && !localBridgeArmed && hotseatTurnDoneTo !== null ? (
                   <div
                     role="status"
-                    className="w-full max-w-[540px] min-h-9 [@media(max-height:540px)]:min-h-7 flex items-center justify-between gap-2 border-2 border-[#0F380F] bg-[#8BAC0F] px-2.5 py-1 font-mono text-[#0F380F] shadow-[2px_2px_0px_#0F380F]"
+                    className="w-full max-w-[540px] min-h-9 [@media(max-height:540px)]:min-h-7 flex items-center justify-between gap-2 border-2 border-[#507582] bg-[#233c4b] px-2.5 py-1 font-mono text-[#e8f6f6] shadow-[0_2px_16px_#050e1d80]"
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
                       <span className="text-xs font-black uppercase tracking-wider shrink-0">TURN DONE</span>
@@ -4715,7 +4715,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
                     <button
                       type="button"
                       onClick={handleHotseatConfirmTurnDone}
-                      className="shrink-0 h-8 [@media(max-height:540px)]:h-6 px-3 bg-[#0F380F] hover:bg-[#306230] text-[#9BBC0F] border-2 border-[#0F380F] font-black text-xs uppercase cursor-pointer shadow-[2px_2px_0px_#306230] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+                      className="shrink-0 h-8 [@media(max-height:540px)]:h-6 px-3 bg-[#e8f6f6] hover:bg-[#a6c5d1] text-[#132735] border-2 border-[#507582] font-black text-xs uppercase cursor-pointer shadow-[2px_2px_0px_#a6c5d1] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
                     >
                       PASS PHONE
                     </button>
@@ -4778,13 +4778,13 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
       {/* Footer info — hidden in match view and short landscape screens to give full vertical budget */}
       {!isMatchView && (
         <footer className="text-center text-[10px] font-mono opacity-80 py-0.5 shrink-0 [@media(max-height:500px)]:hidden">
-          4-shade palette • {settings.gridSize}×{settings.gridSize} grid • {playMode === 'LOCAL_HOTSEAT' ? (localBridgeArmed ? 'Hotseat vs AI: plan → lock → board steps' : 'Turn-based hotseat: move → lock → pass') : settings.turnBased ? 'Turn-based simultaneous moves' : `Host-authoritative ${settings.tickRate} TPS`} • Gamepad API ready
+          {settings.gridSize}×{settings.gridSize} grid • {playMode === 'LOCAL_HOTSEAT' ? (localBridgeArmed ? 'Hotseat vs AI: plan → lock → board steps' : 'Turn-based hotseat: move → lock → pass') : settings.turnBased ? 'Turn-based simultaneous moves' : `Host-authoritative ${settings.tickRate} TPS`} • Gamepad API ready
         </footer>
       )}
 
       {/* ---- LOCAL 2P HOTSEAT: pass screen + PIN pad ---- */}
       {playMode === 'LOCAL_HOTSEAT' && hotseatPassTo !== null && (
-        <div role="dialog" aria-modal="true" aria-label="Pass the phone" className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-[#0F380F] p-6 font-mono text-[#9BBC0F]">
+        <div role="dialog" aria-modal="true" aria-label="Pass the phone" className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-[#e8f6f6] p-6 font-mono text-[#132735]">
           <div className="text-center">
             <div className="text-xs font-black uppercase tracking-widest opacity-80">Hotseat • Pass the phone</div>
             <div className="mt-2 text-2xl font-black">Pass to {gameState.snakes.find(s => s.id === hotseatPassTo)?.name ?? 'PLAYER'}</div>
@@ -4793,15 +4793,15 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
           <button
             type="button"
             onClick={handleHotseatPassReady}
-            className="w-full max-w-[320px] cursor-pointer py-4 bg-[#9BBC0F] text-[#0F380F] border-4 border-[#9BBC0F] font-black text-lg shadow-[4px_4px_0px_#306230] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+            className="w-full max-w-[320px] cursor-pointer py-4 bg-[#132735] text-[#e8f6f6] border-4 border-[#132735] font-black text-lg shadow-[4px_4px_0px_#a6c5d1] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
           >
             TAP WHEN READY
           </button>
         </div>
       )}
       {playMode === 'LOCAL_HOTSEAT' && hotseatPinPad !== null && (
-        <div role="dialog" aria-modal="true" aria-label="PIN pad" className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-[#0F380F] p-6 font-mono text-[#9BBC0F]">
-          <div className="w-full max-w-[300px] flex flex-col gap-3 bg-[#9BBC0F] border-4 border-[#0F380F] shadow-[6px_6px_0px_#306230] p-4 text-center text-[#0F380F]">
+        <div role="dialog" aria-modal="true" aria-label="PIN pad" className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-[#e8f6f6] p-6 font-mono text-[#132735]">
+          <div className="w-full max-w-[300px] flex flex-col gap-3 bg-[#132735] border-4 border-[#507582] shadow-[6px_6px_0px_#a6c5d1] p-4 text-center text-[#e8f6f6]">
             <div className="text-xs font-black uppercase tracking-wider">
               {hotseatPinPad.mode === 'set'
                 ? `Set a 2-digit PIN (${gameState.snakes.find(s => s.id === hotseatPinPad.seat)?.name ?? 'PLAYER'})`
@@ -4822,7 +4822,7 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
                   key={key}
                   type="button"
                   onClick={() => key === '←' ? handleHotseatPinBackspace() : key === 'C' ? handleHotseatPinClear() : handleHotseatPinDigit(key)}
-                  className="cursor-pointer py-3 bg-[#0F380F] text-[#9BBC0F] font-black text-lg border-2 border-[#0F380F] active:bg-[#306230]"
+                  className="cursor-pointer py-3 bg-[#e8f6f6] text-[#132735] font-black text-lg border-2 border-[#507582] active:bg-[#a6c5d1]"
                 >
                   {key}
                 </button>
@@ -4830,19 +4830,19 @@ const GameApp: React.FC<{ campaignPlaytestLevel: CampaignLevel | null; isAdmin?:
             </div>
             {hotseatPinPad.mode === 'set' ? (
               <div className="flex gap-2">
-                <button type="button" onClick={handleHotseatPinSet} disabled={hotseatPinInput.length !== 2} className="flex-1 cursor-pointer py-2 bg-[#0F380F] text-[#9BBC0F] font-black text-sm border-2 border-[#0F380F] disabled:opacity-40">
+                <button type="button" onClick={handleHotseatPinSet} disabled={hotseatPinInput.length !== 2} className="flex-1 cursor-pointer py-2 bg-[#e8f6f6] text-[#132735] font-black text-sm border-2 border-[#507582] disabled:opacity-40">
                   SET PIN
                 </button>
-                <button type="button" onClick={handleHotseatPinSkip} className="flex-1 cursor-pointer py-2 bg-[#8BAC0F] text-[#0F380F] font-black text-sm border-2 border-[#0F380F]">
+                <button type="button" onClick={handleHotseatPinSkip} className="flex-1 cursor-pointer py-2 bg-[#233c4b] text-[#e8f6f6] font-black text-sm border-2 border-[#507582]">
                   SKIP — NO PIN
                 </button>
               </div>
             ) : (
               <div className="flex gap-2">
-                <button type="button" onClick={handleHotseatPinUnlock} disabled={hotseatPinInput.length !== 2} className="flex-1 cursor-pointer py-2 bg-[#0F380F] text-[#9BBC0F] font-black text-sm border-2 border-[#0F380F] disabled:opacity-40">
+                <button type="button" onClick={handleHotseatPinUnlock} disabled={hotseatPinInput.length !== 2} className="flex-1 cursor-pointer py-2 bg-[#e8f6f6] text-[#132735] font-black text-sm border-2 border-[#507582] disabled:opacity-40">
                   UNLOCK
                 </button>
-                <button type="button" onClick={handleHotseatPinCancel} className="flex-1 cursor-pointer py-2 bg-[#8BAC0F] text-[#0F380F] font-black text-sm border-2 border-[#0F380F]">
+                <button type="button" onClick={handleHotseatPinCancel} className="flex-1 cursor-pointer py-2 bg-[#233c4b] text-[#e8f6f6] font-black text-sm border-2 border-[#507582]">
                   CANCEL
                 </button>
               </div>

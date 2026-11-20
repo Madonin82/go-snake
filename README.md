@@ -1,6 +1,6 @@
 # Snake Royale — 2-Player Token Race
 
-A tiny competitive Snake game for two players: race for tokens on a small board, then survive as the arena shrinks. Game Boy 4-shade looks, chess-pace turn-based multiplayer by default, and a built-in latency harness because this started life as a networking testbed that turned into a real game.
+A tiny competitive Snake game for two players: race for tokens on a small board, then survive as the arena shrinks. a high-resolution 2D arena, chess-pace turn-based multiplayer by default, and a built-in latency harness because this started life as a networking testbed that turned into a real game.
 
 **Play it:** https://madonin82.github.io/go-snake/
 
@@ -13,7 +13,7 @@ A tiny competitive Snake game for two players: race for tokens on a small board,
   - **Spectator mode:** anyone with the room code can watch a live match (watcher count shown in the lobby). No seat, no input.
 - **Display names + series score:** set an optional name (saved per browser); the room keeps a running series score (wins/draws) across rematches, and each player's cumulative think time is tracked.
 - **Move privacy:** your queued move arrows are visible only to you — opponents see "Hidden" (desktop HUD and mobile cards).
-- **Snake visuals:** directional eyes on the head, tapered tail. Same Game Boy palette.
+- **Snake visuals:** teal and coral bodies, directional eyes, and tapered tails.
 - **Match replay:** every match is recorded turn by turn. After a match, WATCH REPLAY scrubs through it at 2×/5×/10× (thinking pauses edited out). Replays include think-time data.
 - **Solo vs AI and local 2P** for same-screen or bot-sparring play.
 - **Latency harness:** a NET readout in the HUD with ping/pong probes (median + p95), plus input-to-render tick lag. Note: the ping number measures time-until-the-peer-acks, so on a slow-thinking opponent it reads huge — that's the harness being honest about a different thing than wire latency.
@@ -25,7 +25,7 @@ A tiny competitive Snake game for two players: race for tokens on a small board,
 - **Phase 1 (Token Race)** runs for a configurable number of turns (60/90/120). Then **Phase 2 (Shrink):** no new tokens, and every few turns the outer ring of the arena becomes wall (with a telegraphed warning ring first).
 - Hit a wall, your own body, or the other snake and you die. Head-on in the same step kills both.
 - **Win:** be the last snake alive. If both die together or the match expires: most tokens wins, then longest snake, then draw.
-- Arena: 8×8, 12×12, or 16×16 (Settings). Palette is strictly the four Game Boy greens: `#0F380F`, `#306230`, `#8BAC0F`, `#9BBC0F`.
+- Arena: 8×8, 12×12, or 16×16 (Settings). A lit tile grid separates playable cells from stone barriers and amber shrink warnings.
 
 ## Controls
 

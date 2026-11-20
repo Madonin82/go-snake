@@ -69,7 +69,7 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({
         key={who}
         data-testid={`replay-stats-card-${who}`}
         className={`p-2 border-2 ${palette.borderColor} ${palette.defaultShadow} flex flex-col items-center transition-all ${
-          isWinner ? 'bg-[#9BBC0F]' : 'bg-[#8BAC0F]/90'
+          isWinner ? 'bg-[#132735]' : 'bg-[#233c4b]/90'
         }`}
       >
         <div
@@ -83,13 +83,13 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({
           <span className="flex items-center gap-1.5 min-w-0 truncate">
             <span
               data-testid={`replay-stats-color-chip-${who}`}
-              className={`inline-block w-2.5 h-2.5 shrink-0 border border-[#0F380F] ${palette.chipBg}`}
-              title={`Snake Color ${palette.hex}`}
+              className={`inline-block w-2.5 h-2.5 shrink-0 border border-[#507582] ${palette.chipBg}`}
+              title={`Snake Color ${palette.light}`}
             />
             <span
               data-testid={`replay-stats-standing-${who}`}
-              className={`px-1 py-0.5 text-[9px] font-black leading-none shrink-0 border border-[#0F380F] ${
-                stats.standing === 1 ? 'bg-[#0F380F] text-[#9BBC0F]' : 'bg-[#9BBC0F] text-[#0F380F]'
+              className={`px-1 py-0.5 text-[9px] font-black leading-none shrink-0 border border-[#507582] ${
+                stats.standing === 1 ? 'bg-[#e8f6f6] text-[#132735]' : 'bg-[#132735] text-[#e8f6f6]'
               }`}
             >
               {stats.standingLabel}
@@ -100,12 +100,12 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({
         </div>
 
         {/* Standings summary bar: Points, Tokens, Kills */}
-        <div className="grid grid-cols-3 gap-1 w-full mt-1.5 bg-[#9BBC0F]/70 border border-[#0F380F] px-1.5 py-1 text-center">
+        <div className="grid grid-cols-3 gap-1 w-full mt-1.5 bg-[#132735]/70 border border-[#507582] px-1.5 py-1 text-center">
           <div className="flex flex-col items-center">
             <span className="text-sm font-black leading-none tabular-nums">{stats.points}</span>
             <span className="text-[8px] font-bold opacity-80 uppercase mt-0.5">POINTS</span>
           </div>
-          <div className="flex flex-col items-center border-x border-[#0F380F]/40">
+          <div className="flex flex-col items-center border-x border-[#507582]/40">
             <span className="text-sm font-black leading-none tabular-nums">{stats.tokensCollected}</span>
             <span className="text-[8px] font-bold opacity-80 uppercase mt-0.5">TOKENS</span>
           </div>
@@ -116,7 +116,7 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({
         </div>
 
         {isExpanded && (
-          <div className="mt-1.5 pt-1.5 border-t border-[#0F380F] w-full text-[10px] font-bold space-y-1 bg-[#8BAC0F]/50 p-1.5">
+          <div className="mt-1.5 pt-1.5 border-t border-[#507582] w-full text-[10px] font-bold space-y-1 bg-[#233c4b]/50 p-1.5">
             <div className="flex justify-between"><span>Avg Lock:</span><span className="tabular-nums">{stats.avgLockTime}</span></div>
             <div className="flex justify-between"><span>Fast / Slow:</span><span className="tabular-nums">{stats.fastestLock} / {stats.slowestLock}</span></div>
             <div className="flex justify-between"><span>Auto-Locks:</span><span className="tabular-nums">{stats.autoLockPct}</span></div>
@@ -180,14 +180,14 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({
   }, [index, max, speed, statsOpen, onExit, onTogglePlay, onSeek, onSpeedChange, onRegisterHandler]);
 
   return (
-    <div className="w-full max-w-[360px] sm:max-w-[420px] md:max-w-[480px] bg-[#8BAC0F] border-2 border-[#0F380F] px-3 py-2 font-mono text-[#0F380F] flex flex-col gap-2 relative">
+    <div className="w-full max-w-[360px] sm:max-w-[420px] md:max-w-[480px] bg-[#233c4b] border-2 border-[#507582] px-3 py-2 font-mono text-[#e8f6f6] flex flex-col gap-2 relative">
       {statsOpen && (
-        <div className="absolute bottom-full mb-2 inset-x-0 bg-[#9BBC0F] border-4 border-[#0F380F] shadow-[4px_4px_0px_#0F380F] p-3 z-30 flex flex-col gap-2 text-left animate-fadeIn max-h-[70dvh] overflow-y-auto">
-          <div className="flex items-center justify-between border-b-2 border-[#0F380F] pb-1">
+        <div className="absolute bottom-full mb-2 inset-x-0 bg-[#132735] border-4 border-[#507582] shadow-[0_4px_16px_#050e1d80] p-3 z-30 flex flex-col gap-2 text-left animate-fadeIn max-h-[70dvh] overflow-y-auto">
+          <div className="flex items-center justify-between border-b-2 border-[#507582] pb-1">
             <span className="font-black text-xs uppercase">📊 Match Analytics & Stats</span>
             <button
               onClick={() => { soundEngine.playMenuBack(); setStatsOpen(false); }}
-              className="px-1.5 py-0.5 bg-[#8BAC0F] border border-[#0F380F] text-[10px] font-bold cursor-pointer"
+              className="px-1.5 py-0.5 bg-[#233c4b] border border-[#507582] text-[10px] font-bold cursor-pointer"
             >
               ✕ CLOSE
             </button>
@@ -205,11 +205,11 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({
                 return (
                   <span
                     key={entry.id}
-                    className={`inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#0F380F] ${
-                      entry.standing === 1 ? 'bg-[#0F380F] text-[#9BBC0F]' : 'bg-[#8BAC0F] text-[#0F380F]'
+                    className={`inline-flex items-center gap-1 px-1.5 py-0.5 border border-[#507582] ${
+                      entry.standing === 1 ? 'bg-[#e8f6f6] text-[#132735]' : 'bg-[#233c4b] text-[#e8f6f6]'
                     }`}
                   >
-                    <span className={`inline-block w-2 h-2 border border-[#9BBC0F]/60 ${palette.chipBg}`} />
+                    <span className={`inline-block w-2 h-2 border border-[#132735]/60 ${palette.chipBg}`} />
                     <span>{entry.standingLabel} {entry.name}</span>
                     <span className="opacity-85">({entry.points} PTS · {entry.tokensCollected} 💎 · {entry.kills} ⚔)</span>
                   </span>
@@ -247,7 +247,7 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({
               soundEngine.playMenuSelect();
               setStatsOpen(prev => !prev);
             }}
-            className="flex items-center gap-1 bg-[#9BBC0F] hover:bg-[#0F380F] hover:text-[#9BBC0F] px-1.5 py-0.5 border border-[#0F380F] cursor-pointer"
+            className="flex items-center gap-1 bg-[#132735] hover:bg-[#e8f6f6] hover:text-[#132735] px-1.5 py-0.5 border border-[#507582] cursor-pointer"
             title="View Match Analytics & Stats"
           >
             <BarChart2 className="w-3 h-3" />
@@ -259,7 +259,7 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({
                 soundEngine.playMenuSelect();
                 onExportReplay();
               }}
-              className="flex items-center gap-1 bg-[#9BBC0F] hover:bg-[#0F380F] hover:text-[#9BBC0F] px-1.5 py-0.5 border border-[#0F380F] cursor-pointer"
+              className="flex items-center gap-1 bg-[#132735] hover:bg-[#e8f6f6] hover:text-[#132735] px-1.5 py-0.5 border border-[#507582] cursor-pointer"
               title="Export Replay JSON"
             >
               <span>EXPORT ⬇</span>
@@ -270,7 +270,7 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({
               soundEngine.playMenuBack();
               onExit();
             }}
-            className="flex items-center gap-1 bg-[#9BBC0F] hover:bg-[#0F380F] hover:text-[#9BBC0F] px-1.5 py-0.5 border border-[#0F380F] cursor-pointer"
+            className="flex items-center gap-1 bg-[#132735] hover:bg-[#e8f6f6] hover:text-[#132735] px-1.5 py-0.5 border border-[#507582] cursor-pointer"
           >
             <X className="w-3 h-3" />
             <span>EXIT [B]</span>
@@ -284,7 +284,7 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({
             soundEngine.playMenuSelect();
             onTogglePlay();
           }}
-          className="bg-[#0F380F] text-[#9BBC0F] px-3 py-1.5 border border-[#0F380F] font-black text-xs flex items-center gap-1 cursor-pointer"
+          className="bg-[#e8f6f6] text-[#132735] px-3 py-1.5 border border-[#507582] font-black text-xs flex items-center gap-1 cursor-pointer"
         >
           {playing ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
           <span>{playing ? 'PAUSE [A]' : 'PLAY [A]'}</span>
@@ -308,8 +308,8 @@ export const ReplayControls: React.FC<ReplayControlsProps> = ({
                 soundEngine.playMenuSelect();
                 onSpeedChange(s);
               }}
-              className={`px-1.5 py-1 border border-[#0F380F] text-[10px] font-black cursor-pointer ${
-                speed === s ? 'bg-[#0F380F] text-[#9BBC0F]' : 'bg-[#9BBC0F]'
+              className={`px-1.5 py-1 border border-[#507582] text-[10px] font-black cursor-pointer ${
+                speed === s ? 'bg-[#e8f6f6] text-[#132735]' : 'bg-[#132735]'
               }`}
             >
               {s}×

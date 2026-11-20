@@ -42,15 +42,15 @@ export const WebRtcStatsCard: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#8BAC0F] p-2.5 border-2 border-[#0F380F] flex flex-col gap-2">
-      <div className="flex items-center justify-between text-xs font-bold border-b border-[#0F380F] pb-1">
+    <div className="bg-[#233c4b] p-2.5 border-2 border-[#507582] flex flex-col gap-2">
+      <div className="flex items-center justify-between text-xs font-bold border-b border-[#507582] pb-1">
         <div className="flex items-center gap-1.5">
-          <Wifi className={`w-3.5 h-3.5 ${stats.connected ? 'text-[#0F380F]' : 'opacity-50'}`} />
+          <Wifi className={`w-3.5 h-3.5 ${stats.connected ? 'text-[#e8f6f6]' : 'opacity-50'}`} />
           <span>WebRTC P2P Data Channel</span>
         </div>
         <span
-          className={`px-1.5 py-0.5 text-[9px] font-black border border-[#0F380F] ${
-            stats.connected ? 'bg-[#0F380F] text-[#9BBC0F]' : 'bg-[#9BBC0F] text-[#0F380F]'
+          className={`px-1.5 py-0.5 text-[9px] font-black border border-[#507582] ${
+            stats.connected ? 'bg-[#e8f6f6] text-[#132735]' : 'bg-[#132735] text-[#e8f6f6]'
           }`}
         >
           {stats.connected ? 'ACTIVE P2P' : stats.state}
@@ -58,21 +58,21 @@ export const WebRtcStatsCard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-3 gap-2 text-center text-xs">
-        <div className="bg-[#9BBC0F] p-1.5 border border-[#0F380F]">
+        <div className="bg-[#132735] p-1.5 border border-[#507582]">
           <div className="text-[9px] font-bold opacity-80 uppercase flex items-center justify-center gap-0.5">
             <ArrowUpRight className="w-3 h-3" /> Sent
           </div>
           <div className="font-black text-sm mt-0.5">{formatBytes(stats.bytesSent)}</div>
         </div>
 
-        <div className="bg-[#9BBC0F] p-1.5 border border-[#0F380F]">
+        <div className="bg-[#132735] p-1.5 border border-[#507582]">
           <div className="text-[9px] font-bold opacity-80 uppercase flex items-center justify-center gap-0.5">
             <ArrowDownLeft className="w-3 h-3" /> Recv
           </div>
           <div className="font-black text-sm mt-0.5">{formatBytes(stats.bytesReceived)}</div>
         </div>
 
-        <div className="bg-[#9BBC0F] p-1.5 border border-[#0F380F]">
+        <div className="bg-[#132735] p-1.5 border border-[#507582]">
           <div className="text-[9px] font-bold opacity-80 uppercase flex items-center justify-center gap-0.5">
             <AlertCircle className="w-3 h-3" /> Loss
           </div>
@@ -80,7 +80,7 @@ export const WebRtcStatsCard: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-[9px] font-bold border-t border-[#0F380F] pt-1">
+      <div className="flex items-center justify-between text-[9px] font-bold border-t border-[#507582] pt-1">
         <span>RTDB FALLBACK: {stats.rtdbConnected ? 'ONLINE' : 'OFFLINE'}</span>
         <span>CHANNEL: {stats.dataChannelState.toUpperCase()}</span>
       </div>

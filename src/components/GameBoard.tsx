@@ -1,6 +1,12 @@
 import React, { PointerEvent as ReactPointerEvent, useEffect, useRef } from 'react';
 import { Direction, GameSettings, GameState, Position, Snake } from '../types/game';
-import { GAMEBOY_COLORS, HitstopInfo } from '../game/engine';
+import { HitstopInfo } from '../game/engine';
+import { getPlayerColorPalette } from '../game/playerColors';
+
+const CELL_SIZE = 32;
+const RENDER_SCALE = 3;
+
+const INACTIVE_SNAKE = { body: '#304354', light: '#6e8292' };
 
 interface GameBoardProps {
   gameState: GameState;
@@ -53,35 +59,20 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     if (!ctx) return;
 
     const gridSize = gameState.gridSize ?? settings.gridSize;
-    const cellSize = 32; // Crisp base internal cell size in pixels
+    const cellSize = CELL_SIZE;
     const boardPixelSize = gridSize * cellSize;
+    const resolution = boardPixelSize * RENDER_SCALE;
 
-    if (canvas.width !== boardPixelSize || canvas.height !== boardPixelSize) {
-      canvas.width = boardPixelSize;
-      canvas.height = boardPixelSize;
+    if (canvas.width !== resolution || canvas.height !== resolution) {
+      canvas.width = resolution;
+      canvas.height = resolution;
     }
-
-    // Disable smoothing for sharp retro Game Boy pixels
-    ctx.imageSmoothingEnabled = false;
-
-    // 1. Background Fill (Lightest Game Boy shade)
-    ctx.fillStyle = GAMEBOY_COLORS.LIGHTEST;
-    ctx.fillRect(0, 0, boardPixelSize, boardPixelSize);
-
-    // 2. Subtle LCD Dot Matrix / Grid lines
-    ctx.fillStyle = GAMEBOY_COLORS.LIGHT;
-    for (let x = 0; x < gridSize; x++) {
-      for (let y = 0; y < gridSize; y++) {
-        // Micro grid intersection pixel
-        ctx.fillRect(x * cellSize, y * cellSize, 1, 1);
-        ctx.fillRect((x + 1) * cellSize - 1, y * cellSize, 1, 1);
-      }
-    }
+    ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);
+    renderArena(ctx, gridSize, cellSize);
 
     // 3. Render Shrink Ring / Outer Walls (Closed in)
     const ringInset = gameState.ringInset;
     if (ringInset > 0) {
-      ctx.fillStyle = GAMEBOY_COLORS.DARKEST;
       for (let x = 0; x < gridSize; x++) {
         for (let y = 0; y < gridSize; y++) {
           const isShrunkWall = x < ringInset || x >= gridSize - ringInset || y < ringInset || y >= gridSize - ringInset;
@@ -92,21 +83,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       }
     }
 
-    // 4. Render Telegraph Warning for Shrink Phase (Blinking hazard)
+    // Keep the next ring visible even when animations are disabled.
     if (gameState.isTelegraphingShrink) {
-      const telegraphInset = gameState.telegraphRingInset;
-      // Pulse blink every 200ms
-      const blinkState = !animationsDisabled && Math.floor(Date.now() / 200) % 2 === 0;
-      if (blinkState) {
-        ctx.fillStyle = GAMEBOY_COLORS.DARK;
-        for (let x = 0; x < gridSize; x++) {
-          for (let y = 0; y < gridSize; y++) {
-            const isWarningWall = (x === telegraphInset - 1 || x === gridSize - telegraphInset ||
-                                   y === telegraphInset - 1 || y === gridSize - telegraphInset) &&
-                                  (x >= ringInset && x < gridSize - ringInset && y >= ringInset && y < gridSize - ringInset);
-            if (isWarningWall) {
-              renderTelegraphCell(ctx, x * cellSize, y * cellSize, cellSize);
-            }
+      const next = gameState.telegraphRingInset;
+      for (let x = ringInset; x < gridSize - ringInset; x++) {
+        for (let y = ringInset; y < gridSize - ringInset; y++) {
+          if (x === next - 1 || x === gridSize - next || y === next - 1 || y === gridSize - next) {
+            renderTelegraphCell(ctx, x * cellSize, y * cellSize, cellSize);
           }
         }
       }
@@ -118,26 +101,20 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     );
     for (const wall of gameState.walls ?? []) {
       if (rattleWallSet.has(`${wall.x},${wall.y}`)) continue;
-      ctx.fillStyle = GAMEBOY_COLORS.DARKEST;
-      ctx.fillRect(wall.x * cellSize, wall.y * cellSize, cellSize, cellSize);
-      ctx.fillStyle = GAMEBOY_COLORS.DARK;
-      ctx.fillRect(wall.x * cellSize + 4, wall.y * cellSize + 4, cellSize - 8, cellSize - 8);
+      renderShrunkWallCell(ctx, wall.x * cellSize, wall.y * cellSize, cellSize);
     }
 
-    // Rattle walls: tail-sized solid square in the owner's snake color,
-    // so you can tell who dropped a wall at a glance. Ownerless walls
-    // (old states) fall back to the darkest shade.
+    // Rattle walls use the owner’s accent when available.
     for (const wall of gameState.rattleWalls ?? []) {
       const owner = wall.ownerId
         ? gameState.snakes.find(snake => snake.id === wall.ownerId)
         : undefined;
-      renderRattleWall(ctx, wall.x * cellSize, wall.y * cellSize, cellSize, owner?.color);
+      renderRattleWall(ctx, wall.x * cellSize, wall.y * cellSize, cellSize, owner ? getPlayerColorPalette(owner).body : undefined);
     }
 
     // 5. Render Tokens (Escalating Round Tokens)
-    const tokenBlink = !animationsDisabled && Math.floor(Date.now() / 250) % 2 === 0;
     for (const token of gameState.tokens) {
-      renderToken(ctx, token.x * cellSize, token.y * cellSize, cellSize, tokenBlink);
+      renderToken(ctx, token.x * cellSize, token.y * cellSize, cellSize);
     }
 
     // 6. Render Planned Paths (Hatched pattern during planning) and Locked Paths (Solid committed shading)
@@ -147,10 +124,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         const path = plannedPaths[snake.id];
         if (!path || path.length === 0) continue;
 
-        const isP1 = snake.id === 'p1';
-        const washColor = isP1 ? 'rgba(15, 56, 15, 0.08)' : 'rgba(48, 98, 48, 0.10)';
-        const hatchColor = isP1 ? 'rgba(15, 56, 15, 0.40)' : 'rgba(48, 98, 48, 0.45)';
-        const outlineColor = isP1 ? 'rgba(15, 56, 15, 0.45)' : 'rgba(48, 98, 48, 0.50)';
+        const { light: targetColor, rgb } = getPlayerColorPalette(snake);
 
         // Draw planned cells (lighter + diagonal hatch lines)
         for (const pos of path) {
@@ -160,7 +134,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           const rh = cellSize - 12;
 
           // Lighter background wash
-          ctx.fillStyle = washColor;
+          ctx.fillStyle = `rgba(${rgb}, 0.12)`;
           ctx.fillRect(rx, ry, rw, rh);
 
           // Diagonal hatch lines
@@ -169,7 +143,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           ctx.rect(rx, ry, rw, rh);
           ctx.clip();
 
-          ctx.strokeStyle = hatchColor;
+          ctx.strokeStyle = `rgba(${rgb}, 0.32)`;
           ctx.lineWidth = 1.5;
           const step = 5;
           for (let offset = -rh; offset <= rw + rh; offset += step) {
@@ -180,7 +154,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           }
 
           // Subtle light border around the planned path cell
-          ctx.strokeStyle = outlineColor;
+          ctx.strokeStyle = `rgba(${rgb}, 0.6)`;
           ctx.lineWidth = 1;
           ctx.strokeRect(rx + 0.5, ry + 0.5, rw - 1, rh - 1);
           ctx.restore();
@@ -193,11 +167,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           const epY = endpoint.y * cellSize;
 
           ctx.save();
-          const targetColor = isP1 ? GAMEBOY_COLORS.DARKEST : GAMEBOY_COLORS.DARK;
 
           // Subtle wash inside endpoint cell
           const pulseAlpha = animationsDisabled ? 0.25 : 0.18 + 0.12 * Math.sin(Date.now() / 200);
-          ctx.fillStyle = isP1 ? `rgba(15, 56, 15, ${pulseAlpha})` : `rgba(48, 98, 48, ${pulseAlpha})`;
+          ctx.fillStyle = `rgba(${rgb}, ${pulseAlpha})`;
           ctx.fillRect(epX + 3, epY + 3, cellSize - 6, cellSize - 6);
 
           // Distinct crisp outline around endpoint
@@ -239,7 +212,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       for (const snake of gameState.snakes) {
         const path = lockedPaths[snake.id];
         if (!path) continue;
-        ctx.fillStyle = snake.id === 'p1' ? 'rgba(15, 56, 15, 0.22)' : 'rgba(48, 98, 48, 0.28)';
+        ctx.fillStyle = `rgba(${getPlayerColorPalette(snake).rgb}, 0.48)`;
         for (const pos of path) {
           ctx.fillRect(pos.x * cellSize + 6, pos.y * cellSize + 6, cellSize - 12, cellSize - 12);
         }
@@ -248,7 +221,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
     // 7. Render Snakes
     for (const snake of gameState.snakes) {
-      const isFirst = gameState.snakes[0]?.id === snake.id;
       const isAnimatingFatalMove = !snake.isAlive && fatalMoveAnimating.includes(snake.id);
       const isDuringDeathHitstop = Boolean(
         !snake.isAlive &&
@@ -260,25 +232,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         ),
       );
       const renderAsAlive = snake.isAlive || isDuringDeathHitstop || isAnimatingFatalMove;
-      const bodyColor = !renderAsAlive
-        ? GAMEBOY_COLORS.DARKEST
-        : (snake.color || (isFirst
-          ? GAMEBOY_COLORS.DARKEST
-          : GAMEBOY_COLORS.DARK));
-      const accentColor = !renderAsAlive
-        ? GAMEBOY_COLORS.DARKEST
-        : isFirst
-          ? GAMEBOY_COLORS.LIGHT
-          : GAMEBOY_COLORS.LIGHTEST;
-      renderSnake(
-        ctx,
-        snake,
-        cellSize,
-        bodyColor,
-        accentColor,
-        snake.id,
-        isAnimatingFatalMove,
-      );
+      const palette = renderAsAlive ? getPlayerColorPalette(snake) : INACTIVE_SNAKE;
+      renderSnake(ctx, snake, cellSize, palette, isAnimatingFatalMove);
     }
 
     // 8. Persistent red direction arrow on dead snake head cell for the rest of the match
@@ -317,7 +272,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       ctx.save();
       for (const trail of gameState.dartTrail) {
         const snake = gameState.snakes.find(s => s.id === trail.snakeId);
-        const baseColor = snake?.id === 'p1' ? GAMEBOY_COLORS.DARKEST : GAMEBOY_COLORS.DARK;
+        const baseColor = snake ? getPlayerColorPalette(snake).light : '#d5e7ec';
         trail.cells.forEach((cell, idx) => {
           // Fade: first cell (earliest) more transparent, later cells more solid
           const opacity = 0.25 + (idx / Math.max(1, trail.cells.length)) * 0.35;
@@ -341,7 +296,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     // 10. Render Denied Cell X Flashes
     if (deniedCells && deniedCells.length > 0) {
       ctx.save();
-      ctx.strokeStyle = '#5A6E5A'; // Retro Game Boy LCD gray
+      ctx.strokeStyle = '#ffdbd3';
       ctx.lineWidth = 3;
       ctx.lineCap = 'round';
       for (const cell of deniedCells) {
@@ -359,9 +314,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     }
 
     // 11. Outer Frame Border
-    ctx.strokeStyle = GAMEBOY_COLORS.DARKEST;
-    ctx.lineWidth = 4;
-    ctx.strokeRect(2, 2, boardPixelSize - 4, boardPixelSize - 4);
+    ctx.strokeStyle = '#60828d';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0.5, 0.5, boardPixelSize - 1, boardPixelSize - 1);
 
   }, [gameState, settings, lockedPaths, plannedPaths, animationsDisabled, hitstop, fatalMoveAnimating, deniedCells]);
 
@@ -373,10 +328,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     if (!canvas || !rect) return;
     const contentLeft = rect.left + canvas.clientLeft;
     const contentTop = rect.top + canvas.clientTop;
-    const x = ((event.clientX - contentLeft) / canvas.clientWidth) * canvas.width;
-    const y = ((event.clientY - contentTop) / canvas.clientHeight) * canvas.height;
-    const cellSize = 32;
+    const cellSize = CELL_SIZE;
     const gridSize = gameState.gridSize ?? settings.gridSize;
+    const x = ((event.clientX - contentLeft) / canvas.clientWidth) * gridSize * cellSize;
+    const y = ((event.clientY - contentTop) / canvas.clientHeight) * gridSize * cellSize;
     const cellX = Math.floor(x / cellSize);
     const cellY = Math.floor(y / cellSize);
 
@@ -453,10 +408,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     if (event.clientX < contentLeft || event.clientX > contentRight ||
       event.clientY < contentTop || event.clientY > contentBottom) return;
 
-    const cellSize = 32;
-    const x = ((event.clientX - contentLeft) / canvas.clientWidth) * canvas.width;
-    const y = ((event.clientY - contentTop) / canvas.clientHeight) * canvas.height;
+    const cellSize = CELL_SIZE;
     const gridSize = gameState.gridSize ?? settings.gridSize;
+    const x = ((event.clientX - contentLeft) / canvas.clientWidth) * gridSize * cellSize;
+    const y = ((event.clientY - contentTop) / canvas.clientHeight) * gridSize * cellSize;
     const cellX = Math.floor(x / cellSize);
     const cellY = Math.floor(y / cellSize);
 
@@ -531,11 +486,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   return (
-    <div className="match-board relative flex flex-col items-center justify-center p-2 bg-[#9BBC0F] border-4 border-[#0F380F] shadow-[inset_0_0_12px_rgba(15,56,15,0.4)]">
+    <div className="match-board arena-frame relative flex items-center justify-center">
       <canvas
         ref={canvasRef}
-        className="w-full h-full max-w-full aspect-square block pixelated border-2 border-[#306230]"
-        style={{ imageRendering: 'pixelated' }}
+        className="w-full h-full max-w-full aspect-square block rounded-lg"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -569,95 +523,110 @@ function isReverseDirection(current: Direction, next: Direction): boolean {
     (current === 'RIGHT' && next === 'LEFT');
 }
 
-// Helper: Render Snake Body & Head
+function renderArena(ctx: CanvasRenderingContext2D, gridSize: number, cellSize: number) {
+  const size = gridSize * cellSize;
+  const light = ctx.createRadialGradient(size * 0.36, size * 0.24, 0, size * 0.5, size * 0.5, size * 0.72);
+  light.addColorStop(0, '#284d57');
+  light.addColorStop(0.55, '#172f3a');
+  light.addColorStop(1, '#0a1623');
+  ctx.fillStyle = light;
+  ctx.fillRect(0, 0, size, size);
+
+  for (let row = 0; row < gridSize; row++) {
+    for (let column = 0; column < gridSize; column++) {
+      const x = column * cellSize;
+      const y = row * cellSize;
+      ctx.fillStyle = (row + column) % 2 === 0 ? '#a4d8de12' : '#000b171a';
+      ctx.fillRect(x + 1, y + 1, cellSize - 1, cellSize - 1);
+      ctx.fillStyle = '#c8edec21';
+      ctx.fillRect(x + 1, y + 1, cellSize - 2, 1);
+      ctx.fillStyle = '#d3f0eb38';
+      ctx.fillRect(x + 3, y + 4, 2, 1);
+    }
+  }
+}
+
 function renderSnake(
   ctx: CanvasRenderingContext2D,
   snake: Snake,
   cellSize: number,
-  bodyColor: string,
-  accentColor: string,
-  _label: string,
-  lungeFatalMove: boolean = false,
+  palette: { body: string; light: string },
+  lungeFatalMove: boolean,
 ) {
-  if (snake.body.length === 0) return;
+  const positions = snake.body;
+  const head = positions[0];
+  if (!head) return;
+  const half = cellSize / 2;
+  const center = ({ x, y }: Position) => [x * cellSize + half, y * cellSize + half] as const;
+  const [headX, headY] = center(head);
+  const dx = snake.direction === 'RIGHT' ? 1 : snake.direction === 'LEFT' ? -1 : 0;
+  const dy = snake.direction === 'DOWN' ? 1 : snake.direction === 'UP' ? -1 : 0;
+  const lunge = lungeFatalMove ? cellSize * 0.42 : 0;
 
-  const tailIdx = snake.body.length - 1;
+  ctx.save();
+  ctx.lineCap = 'round';
+  for (let i = positions.length - 1; i >= 1; i--) {
+    const [x, y] = center(positions[i]);
+    const [nextX, nextY] = center(positions[i - 1]);
+    const width = i === positions.length - 1 ? 17 : 22;
 
-  // Render Body Segments (from tail to neck)
-  for (let i = tailIdx; i >= 1; i--) {
-    const seg = snake.body[i];
-    const prevSeg = snake.body[i - 1];
-    const px = seg.x * cellSize;
-    const py = seg.y * cellSize;
-
-    if (i === tailIdx && tailIdx > 1) {
-      // Tapered tail: smaller centered block so the tail reads as an endpoint
-      const tSize = cellSize * 0.55;
-      const tOff = (cellSize - tSize) / 2;
-      ctx.fillStyle = bodyColor;
-      ctx.fillRect(px + tOff, py + tOff, tSize, tSize);
-      ctx.fillStyle = accentColor;
-      const inner = tSize * 0.45;
-      const innerOff = (cellSize - inner) / 2;
-      ctx.fillRect(px + innerOff, py + innerOff, inner, inner);
-    } else {
-      ctx.fillStyle = bodyColor;
-      ctx.fillRect(px + 2, py + 2, cellSize - 4, cellSize - 4);
-
-      // Subtle scale pattern / inner block
-      ctx.fillStyle = accentColor;
-      ctx.fillRect(px + 6, py + 6, cellSize - 12, cellSize - 12);
-    }
-
-    // Connection seam / bridge
-    if (prevSeg) {
-      if (seg.x !== prevSeg.x) {
-        const minX = Math.min(seg.x, prevSeg.x);
-        ctx.fillRect((minX + 1) * cellSize - 2, py + 6, 4, cellSize - 12);
-      } else if (seg.y !== prevSeg.y) {
-        const minY = Math.min(seg.y, prevSeg.y);
-        ctx.fillRect(px + 6, (minY + 1) * cellSize - 2, cellSize - 12, 4);
-      }
-    }
+    // Older match snapshots can contain disconnected cells. Draw the cell
+    // without bridging the gap in that case.
+    const adjacent = Math.abs(x - nextX) + Math.abs(y - nextY) === cellSize;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(adjacent ? nextX : x + 0.01, adjacent ? nextY : y);
+    ctx.strokeStyle = '#07141e';
+    ctx.lineWidth = width + 4;
+    ctx.stroke();
+    ctx.strokeStyle = palette.body;
+    ctx.lineWidth = width;
+    ctx.stroke();
   }
 
-  // Render Head (with fatal move lunge offset if playing back the fatal move)
-  const head = snake.body[0];
-  const lungeOffset = lungeFatalMove ? Math.round(cellSize * 0.42) : 0;
-  const lungeDx = snake.direction === 'LEFT' ? -lungeOffset : snake.direction === 'RIGHT' ? lungeOffset : 0;
-  const lungeDy = snake.direction === 'UP' ? -lungeOffset : snake.direction === 'DOWN' ? lungeOffset : 0;
-  const hx = head.x * cellSize + lungeDx;
-  const hy = head.y * cellSize + lungeDy;
+  for (let i = 1; i < positions.length; i++) {
+    const [x, y] = center(positions[i]);
+    ctx.fillStyle = palette.light;
+    ctx.globalAlpha = 0.45;
+    ctx.beginPath();
+    ctx.ellipse(x, y - 2, 4.5, 2.4, -0.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
 
-  if (lungeFatalMove) {
-    // Keep neck/head cell connected during the lunge into the fatal cell
-    ctx.fillStyle = bodyColor;
-    ctx.fillRect(head.x * cellSize + 4, head.y * cellSize + 4, cellSize - 8, cellSize - 8);
+  if (lunge) {
+    ctx.strokeStyle = palette.body;
+    ctx.lineWidth = 19;
+    ctx.beginPath();
+    ctx.moveTo(headX, headY);
+    ctx.lineTo(headX + dx * lunge, headY + dy * lunge);
+    ctx.stroke();
   }
 
-  ctx.fillStyle = bodyColor;
-  ctx.fillRect(hx + 1, hy + 1, cellSize - 2, cellSize - 2);
+  ctx.translate(headX + dx * lunge, headY + dy * lunge);
+  ctx.rotate(Math.atan2(dy, dx));
+  const light = ctx.createLinearGradient(0, -13, 0, 13);
+  light.addColorStop(0, palette.light);
+  light.addColorStop(1, palette.body);
+  ctx.beginPath();
+  ctx.roundRect(-14, -12, 28, 24, [9, 7, 7, 9]);
+  ctx.fillStyle = light;
+  ctx.fill();
+  ctx.strokeStyle = '#081923';
+  ctx.lineWidth = 2;
+  ctx.stroke();
 
-  // Directional eyes on the leading edge
-  const eyeSize = Math.max(3, cellSize * 0.14);
-  const edge = 3;
-  const spread = cellSize * 0.28;
-  const c = cellSize / 2;
-  ctx.fillStyle = accentColor;
-  if (snake.direction === 'UP') {
-    ctx.fillRect(hx + c - spread / 2 - eyeSize / 2, hy + edge, eyeSize, eyeSize);
-    ctx.fillRect(hx + c + spread / 2 - eyeSize / 2, hy + edge, eyeSize, eyeSize);
-  } else if (snake.direction === 'DOWN') {
-    ctx.fillRect(hx + c - spread / 2 - eyeSize / 2, hy + cellSize - edge - eyeSize, eyeSize, eyeSize);
-    ctx.fillRect(hx + c + spread / 2 - eyeSize / 2, hy + cellSize - edge - eyeSize, eyeSize, eyeSize);
-  } else if (snake.direction === 'LEFT') {
-    ctx.fillRect(hx + edge, hy + c - spread / 2 - eyeSize / 2, eyeSize, eyeSize);
-    ctx.fillRect(hx + edge, hy + c + spread / 2 - eyeSize / 2, eyeSize, eyeSize);
-  } else {
-    // RIGHT
-    ctx.fillRect(hx + cellSize - edge - eyeSize, hy + c - spread / 2 - eyeSize / 2, eyeSize, eyeSize);
-    ctx.fillRect(hx + cellSize - edge - eyeSize, hy + c + spread / 2 - eyeSize / 2, eyeSize, eyeSize);
+  for (const eyeY of [-6, 6]) {
+    ctx.fillStyle = '#f5fdff';
+    ctx.beginPath();
+    ctx.ellipse(5, eyeY, 4, 3.3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#102332';
+    ctx.beginPath();
+    ctx.ellipse(6.5, eyeY, 1.7, 2.2, 0, 0, Math.PI * 2);
+    ctx.fill();
   }
+  ctx.restore();
 }
 
 function renderDeathMarker(
@@ -743,41 +712,77 @@ function renderDeathMarker(
   ctx.restore();
 }
 
-function renderToken(ctx: CanvasRenderingContext2D, x: number, y: number, cellSize: number, blink: boolean) {
-  ctx.fillStyle = blink ? GAMEBOY_COLORS.DARKEST : GAMEBOY_COLORS.DARK;
-  // Diamond shape token
-  ctx.beginPath();
-  ctx.moveTo(x + cellSize / 2, y + 4);
-  ctx.lineTo(x + cellSize - 4, y + cellSize / 2);
-  ctx.lineTo(x + cellSize / 2, y + cellSize - 4);
-  ctx.lineTo(x + 4, y + cellSize / 2);
-  ctx.closePath();
-  ctx.fill();
+function renderToken(ctx: CanvasRenderingContext2D, x: number, y: number, cellSize: number) {
+  const half = cellSize / 2;
+  ctx.save();
+  ctx.translate(x + half, y + half);
+  const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, half);
+  glow.addColorStop(0, '#ffc26c95');
+  glow.addColorStop(1, '#ffc26c00');
+  ctx.fillStyle = glow;
+  ctx.fillRect(-half, -half, cellSize, cellSize);
 
-  ctx.strokeStyle = GAMEBOY_COLORS.LIGHTEST;
-  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, -10);
+  ctx.lineTo(9, -3);
+  ctx.lineTo(7, 6);
+  ctx.lineTo(0, 11);
+  ctx.lineTo(-7, 6);
+  ctx.lineTo(-9, -3);
+  ctx.closePath();
+  ctx.fillStyle = '#f8ad54';
+  ctx.fill();
+  ctx.strokeStyle = '#ffe9b7';
+  ctx.lineWidth = 1.5;
   ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(0, -9);
+  ctx.lineTo(2, -1);
+  ctx.lineTo(-8, -3);
+  ctx.closePath();
+  ctx.fillStyle = '#fff4d1';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(8, -3);
+  ctx.lineTo(2, -1);
+  ctx.lineTo(0, 10);
+  ctx.lineTo(6, 5);
+  ctx.closePath();
+  ctx.fillStyle = '#c97039';
+  ctx.fill();
+  ctx.restore();
 }
 
 function renderShrunkWallCell(ctx: CanvasRenderingContext2D, x: number, y: number, cellSize: number) {
-  ctx.fillStyle = GAMEBOY_COLORS.DARKEST;
+  ctx.fillStyle = '#08131d';
   ctx.fillRect(x, y, cellSize, cellSize);
-  ctx.fillStyle = GAMEBOY_COLORS.DARK;
-  ctx.fillRect(x + 4, y + 4, cellSize - 8, cellSize - 8);
-  ctx.fillStyle = GAMEBOY_COLORS.LIGHTEST;
-  ctx.fillRect(x + 12, y + 12, cellSize - 24, cellSize - 24);
+  const stone = ctx.createLinearGradient(x, y, x, y + cellSize);
+  stone.addColorStop(0, '#4a5967');
+  stone.addColorStop(1, '#202e3e');
+  ctx.fillStyle = stone;
+  ctx.beginPath();
+  ctx.roundRect(x + 2, y + 2, cellSize - 4, cellSize - 6, 4);
+  ctx.fill();
+  ctx.fillStyle = '#92a5b45e';
+  ctx.fillRect(x + 7, y + 4, cellSize - 14, 1);
+  ctx.fillStyle = '#121e2a';
+  ctx.fillRect(x + 8, y + cellSize - 9, cellSize - 16, 2);
 }
 
-function renderRattleWall(ctx: CanvasRenderingContext2D, x: number, y: number, cellSize: number, color?: string) {
-  const tSize = cellSize * 0.55;
-  const tOff = (cellSize - tSize) / 2;
-  ctx.fillStyle = color ?? GAMEBOY_COLORS.DARKEST;
-  ctx.fillRect(x + tOff, y + tOff, tSize, tSize);
+function renderRattleWall(ctx: CanvasRenderingContext2D, x: number, y: number, cellSize: number, color = '#50637a') {
+  renderShrunkWallCell(ctx, x, y, cellSize);
+  ctx.fillStyle = color;
+  ctx.fillRect(x + 8, y + cellSize / 2 - 2, cellSize - 16, 4);
 }
 
 function renderTelegraphCell(ctx: CanvasRenderingContext2D, x: number, y: number, cellSize: number) {
-  ctx.fillStyle = GAMEBOY_COLORS.DARK;
-  ctx.fillRect(x, y, cellSize, cellSize);
-  ctx.fillStyle = GAMEBOY_COLORS.LIGHTEST;
-  ctx.fillRect(x + 6, y + 6, cellSize - 12, cellSize - 12);
+  ctx.fillStyle = '#ff944c35';
+  ctx.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
+  ctx.strokeStyle = '#ffc18a';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(x + 3, y + 3, cellSize - 6, cellSize - 6);
+  ctx.beginPath();
+  ctx.moveTo(x + 7, y + cellSize - 7);
+  ctx.lineTo(x + cellSize - 7, y + 7);
+  ctx.stroke();
 }
