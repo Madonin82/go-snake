@@ -1,6 +1,6 @@
 # Snake Royale — 2-Player Token Race
 
-A tiny competitive Snake game for two players: race for tokens on a small board, then survive as the arena shrinks. a high-resolution 2D arena, chess-pace turn-based multiplayer by default, and a built-in latency harness because this started life as a networking testbed that turned into a real game.
+A tiny competitive Snake game for two players: race for tokens on a small board, then survive as the arena shrinks. a lit Three.js arena, chess-pace turn-based multiplayer by default, and a built-in latency harness because this started life as a networking testbed that turned into a real game.
 
 **Play it:** https://madonin82.github.io/go-snake/
 
@@ -72,7 +72,7 @@ Pushing to `main` triggers the GitHub Pages workflow (`.github/workflows/deploy-
 
 ## Stack
 
-React + TypeScript + Vite, Tailwind, Firebase (Firestore + Anonymous Auth) for rooms/state/inputs, canvas-rendered board, WebAudio bleeps. No server code, no Cloud Functions.
+React + TypeScript + Vite, Tailwind, Firebase (Firestore + Anonymous Auth) for rooms/state/inputs, Three.js arena with a Canvas 2D fallback, WebAudio bleeps. No server code, no Cloud Functions.
 
 ## License / Notes
 
