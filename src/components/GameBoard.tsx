@@ -3,11 +3,11 @@ import { Direction, GameSettings, GameState, Position, Snake } from '../types/ga
 import { HitstopInfo } from '../game/engine';
 import { getPlayerColorPalette } from '../game/playerColors';
 import type { ThreeArena } from './ThreeArena';
+import { paintArenaSprite, snakeHeadSprite, snakeSprites, tokenSprite } from './arenaSprites';
 
 const CELL_SIZE = 32;
 const RENDER_SCALE = 3;
 
-const INACTIVE_SNAKE = { body: '#304354', light: '#6e8292' };
 
 interface GameBoardProps {
   gameState: GameState;
@@ -102,6 +102,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     });
     const arena = renderer?.draw(gameState, gridSize, resolution, snakes);
     if (arena) {
+      ctx.imageSmoothingEnabled = true;
       ctx.drawImage(arena, 0, 0, boardPixelSize, boardPixelSize);
     } else {
       renderArena(ctx, gridSize, cellSize);
@@ -150,9 +151,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         renderRattleWall(ctx, wall.x * cellSize, wall.y * cellSize, cellSize, owner ? getPlayerColorPalette(owner).body : undefined);
       }
 
-      // 5. Render Tokens (Escalating Round Tokens)
+      // Match the WebGL renderer’s hard pixel edges.
+      ctx.imageSmoothingEnabled = false;
       for (const token of gameState.tokens) {
-        renderToken(ctx, token.x * cellSize, token.y * cellSize, cellSize);
+        paintArenaSprite(ctx, tokenSprite(), token, cellSize);
       }
     }
 
@@ -260,8 +262,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
     if (!arena) {
       for (const { snake, inactive, lunge } of snakes) {
-        const palette = inactive ? INACTIVE_SNAKE : getPlayerColorPalette(snake);
-        renderSnake(ctx, snake, cellSize, palette, lunge);
+        ctx.save();
+        if (inactive) ctx.globalAlpha = 0.48;
+        for (const item of snakeSprites(snake, lunge)) {
+          paintArenaSprite(ctx, item.art, item, cellSize);
+        }
+        ctx.restore();
       }
     }
 
@@ -301,22 +307,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       ctx.save();
       for (const trail of gameState.dartTrail) {
         const snake = gameState.snakes.find(s => s.id === trail.snakeId);
-        const baseColor = snake ? getPlayerColorPalette(snake).light : '#d5e7ec';
+        if (!snake) continue;
+        const art = snakeHeadSprite(snake, true);
+        ctx.imageSmoothingEnabled = false;
         trail.cells.forEach((cell, idx) => {
           // Fade: first cell (earliest) more transparent, later cells more solid
           const opacity = 0.25 + (idx / Math.max(1, trail.cells.length)) * 0.35;
           ctx.globalAlpha = opacity;
-          ctx.fillStyle = baseColor;
-          const cx = Math.max(0, Math.min(gridSize - 1, cell.x));
-          const cy = Math.max(0, Math.min(gridSize - 1, cell.y));
-          // Ghost head: slightly inset square
-          const inset = cellSize * 0.15;
-          ctx.fillRect(
-            cx * cellSize + inset,
-            cy * cellSize + inset,
-            cellSize - inset * 2,
-            cellSize - inset * 2
-          );
+          const x = Math.max(0, Math.min(gridSize - 1, cell.x));
+          const y = Math.max(0, Math.min(gridSize - 1, cell.y));
+          paintArenaSprite(ctx, art, { x, y }, cellSize);
         });
       }
       ctx.restore();
@@ -575,89 +575,6 @@ function renderArena(ctx: CanvasRenderingContext2D, gridSize: number, cellSize: 
   }
 }
 
-function renderSnake(
-  ctx: CanvasRenderingContext2D,
-  snake: Snake,
-  cellSize: number,
-  palette: { body: string; light: string },
-  lungeFatalMove: boolean,
-) {
-  const positions = snake.body;
-  const head = positions[0];
-  if (!head) return;
-  const half = cellSize / 2;
-  const center = ({ x, y }: Position) => [x * cellSize + half, y * cellSize + half] as const;
-  const [headX, headY] = center(head);
-  const dx = snake.direction === 'RIGHT' ? 1 : snake.direction === 'LEFT' ? -1 : 0;
-  const dy = snake.direction === 'DOWN' ? 1 : snake.direction === 'UP' ? -1 : 0;
-  const lunge = lungeFatalMove ? cellSize * 0.42 : 0;
-
-  ctx.save();
-  ctx.lineCap = 'round';
-  for (let i = positions.length - 1; i >= 1; i--) {
-    const [x, y] = center(positions[i]);
-    const [nextX, nextY] = center(positions[i - 1]);
-    const width = i === positions.length - 1 ? 17 : 22;
-
-    // Older match snapshots can contain disconnected cells. Draw the cell
-    // without bridging the gap in that case.
-    const adjacent = Math.abs(x - nextX) + Math.abs(y - nextY) === cellSize;
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(adjacent ? nextX : x + 0.01, adjacent ? nextY : y);
-    ctx.strokeStyle = '#07141e';
-    ctx.lineWidth = width + 4;
-    ctx.stroke();
-    ctx.strokeStyle = palette.body;
-    ctx.lineWidth = width;
-    ctx.stroke();
-  }
-
-  for (let i = 1; i < positions.length; i++) {
-    const [x, y] = center(positions[i]);
-    ctx.fillStyle = palette.light;
-    ctx.globalAlpha = 0.45;
-    ctx.beginPath();
-    ctx.ellipse(x, y - 2, 4.5, 2.4, -0.4, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-
-  if (lunge) {
-    ctx.strokeStyle = palette.body;
-    ctx.lineWidth = 19;
-    ctx.beginPath();
-    ctx.moveTo(headX, headY);
-    ctx.lineTo(headX + dx * lunge, headY + dy * lunge);
-    ctx.stroke();
-  }
-
-  ctx.translate(headX + dx * lunge, headY + dy * lunge);
-  ctx.rotate(Math.atan2(dy, dx));
-  const light = ctx.createLinearGradient(0, -13, 0, 13);
-  light.addColorStop(0, palette.light);
-  light.addColorStop(1, palette.body);
-  ctx.beginPath();
-  ctx.roundRect(-14, -12, 28, 24, [9, 7, 7, 9]);
-  ctx.fillStyle = light;
-  ctx.fill();
-  ctx.strokeStyle = '#081923';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  for (const eyeY of [-6, 6]) {
-    ctx.fillStyle = '#f5fdff';
-    ctx.beginPath();
-    ctx.ellipse(5, eyeY, 4, 3.3, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#102332';
-    ctx.beginPath();
-    ctx.ellipse(6.5, eyeY, 1.7, 2.2, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.restore();
-}
-
 function renderDeathMarker(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -738,47 +655,6 @@ function renderDeathMarker(
     ctx.closePath();
     ctx.fill();
   }
-  ctx.restore();
-}
-
-function renderToken(ctx: CanvasRenderingContext2D, x: number, y: number, cellSize: number) {
-  const half = cellSize / 2;
-  ctx.save();
-  ctx.translate(x + half, y + half);
-  const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, half);
-  glow.addColorStop(0, '#ffc26c95');
-  glow.addColorStop(1, '#ffc26c00');
-  ctx.fillStyle = glow;
-  ctx.fillRect(-half, -half, cellSize, cellSize);
-
-  ctx.beginPath();
-  ctx.moveTo(0, -10);
-  ctx.lineTo(9, -3);
-  ctx.lineTo(7, 6);
-  ctx.lineTo(0, 11);
-  ctx.lineTo(-7, 6);
-  ctx.lineTo(-9, -3);
-  ctx.closePath();
-  ctx.fillStyle = '#f8ad54';
-  ctx.fill();
-  ctx.strokeStyle = '#ffe9b7';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(0, -9);
-  ctx.lineTo(2, -1);
-  ctx.lineTo(-8, -3);
-  ctx.closePath();
-  ctx.fillStyle = '#fff4d1';
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(8, -3);
-  ctx.lineTo(2, -1);
-  ctx.lineTo(0, 10);
-  ctx.lineTo(6, 5);
-  ctx.closePath();
-  ctx.fillStyle = '#c97039';
-  ctx.fill();
   ctx.restore();
 }
 

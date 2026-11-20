@@ -1,14 +1,12 @@
 import {
-  BoxGeometry, Color, CylinderGeometry, DirectionalLight, Group, HemisphereLight,
-  IcosahedronGeometry, InstancedMesh, Matrix4, Mesh, MeshStandardMaterial,
-  OrthographicCamera, PointLight, Scene, SphereGeometry, TorusGeometry, WebGLRenderer,
+  BoxGeometry, CanvasTexture, Color, DirectionalLight, Group, HemisphereLight,
+  InstancedMesh, Matrix4, Mesh, MeshBasicMaterial, MeshStandardMaterial, NearestFilter,
+  OrthographicCamera, PlaneGeometry, PointLight, Scene, SRGBColorSpace, TorusGeometry,
+  WebGLRenderer,
 } from 'three';
-import type { Direction, GameState, Position, Snake } from '../types/game';
+import type { GameState, Position, Snake } from '../types/game';
 import { getPlayerColorPalette } from '../game/playerColors';
-
-const facing: Record<Direction, readonly [number, number]> = {
-  UP: [0, 1], DOWN: [0, -1], LEFT: [-1, 0], RIGHT: [1, 0],
-};
+import { snakeSprites, tokenSprite } from './arenaSprites';
 
 export interface ArenaSnake {
   snake: Snake;
@@ -22,10 +20,9 @@ export class ThreeArena {
   private readonly camera = new OrthographicCamera();
   private readonly pieces = new Group();
   private readonly box = new BoxGeometry();
-  private readonly sphere = new SphereGeometry(1, 16, 12);
-  private readonly connector = new CylinderGeometry(1, 1, 1, 16);
+  private readonly spritePlane = new PlaneGeometry();
   private readonly ring = new TorusGeometry(0.33, 0.016, 8, 32);
-  private readonly gem = new IcosahedronGeometry(0.31);
+  private readonly spriteMaterials = new Map<HTMLCanvasElement, [MeshBasicMaterial, MeshBasicMaterial]>();
   private readonly materials = new Map<string, MeshStandardMaterial>();
   private tiles: InstancedMesh | null = null;
   private gridSize = 0;
@@ -74,18 +71,28 @@ export class ThreeArena {
     for (const token of state.tokens) {
       const [x, y] = this.center(token);
       this.add(this.ring, '#d98a3d', x, y, 0.04, 1, 1, 1, '#603709');
-      const crystal = this.add(this.gem, '#ffab48', x, y, 0.39, 1, 1, 1.25, '#7d3e06');
-      crystal.rotation.set(0.6, 0.32, Math.PI / 8);
+      this.addSprite(tokenSprite(), token, 0.4);
     }
 
-    for (const snake of snakes) this.drawSnake(snake);
+    for (const { snake, inactive, lunge } of snakes) {
+      const sprites = snakeSprites(snake, lunge);
+      sprites.forEach((item, index) => {
+        const isHead = index === sprites.length - 1;
+        this.addSprite(item.art, item, isHead ? 0.6 : 0.5, inactive);
+      });
+    }
     this.renderer.render(this.scene, this.camera);
     return this.renderer.domElement;
   }
 
   dispose() {
     this.tiles?.dispose();
-    for (const geometry of [this.box, this.sphere, this.connector, this.gem, this.ring]) geometry.dispose();
+    for (const geometry of [this.box, this.spritePlane, this.ring]) geometry.dispose();
+    for (const [normal, inactive] of this.spriteMaterials.values()) {
+      normal.map?.dispose();
+      normal.dispose();
+      inactive.dispose();
+    }
     for (const material of this.materials.values()) material.dispose();
     this.renderer.dispose();
     this.renderer.forceContextLoss();
@@ -121,42 +128,21 @@ export class ThreeArena {
     this.scene.add(this.tiles);
   }
 
-  private drawSnake({ snake, inactive, lunge }: ArenaSnake) {
-    const head = snake.body[0];
-    if (!head) return;
-    const palette = getPlayerColorPalette(snake);
-    const body = inactive ? '#34465a' : palette.body;
-    const accent = inactive ? '#7890a4' : palette.light;
-
-    for (let i = snake.body.length - 1; i >= 1; i--) {
-      const cell = snake.body[i];
-      const next = snake.body[i - 1];
-      const [x, y] = this.center(cell);
-      const [nx, ny] = this.center(next);
-      const radius = i === snake.body.length - 1 ? 0.24 : 0.31;
-      this.add(this.sphere, '#172837', x + 0.035, y - 0.06, 0.025, radius + 0.025, radius + 0.035, 0.025);
-      this.add(this.sphere, body, x, y, 0.28, radius, radius, 0.22);
-      if (Math.abs(cell.x - next.x) + Math.abs(cell.y - next.y) === 1) {
-        const bridge = this.add(this.connector, body, (x + nx) / 2, (y + ny) / 2, 0.28, radius, 1, 0.22);
-        bridge.rotation.z = Math.atan2(ny - y, nx - x) - Math.PI / 2;
-      }
-      this.add(this.sphere, accent, x, y, 0.49, 0.08, 0.045, 0.025);
+  private addSprite(art: HTMLCanvasElement, cell: Position, height: number, inactive = false) {
+    let materials = this.spriteMaterials.get(art);
+    if (!materials) {
+      const map = new CanvasTexture(art);
+      map.colorSpace = SRGBColorSpace;
+      map.magFilter = map.minFilter = NearestFilter;
+      map.generateMipmaps = false;
+      const options = { map, alphaTest: 0.5, toneMapped: false };
+      materials = [new MeshBasicMaterial(options), new MeshBasicMaterial({ ...options, color: '#66758a' })];
+      this.spriteMaterials.set(art, materials);
     }
-
-    const [hx, hy] = this.center(head);
-    const [dx, dy] = facing[snake.direction];
-    const x = hx + (lunge ? dx * 0.42 : 0);
-    const y = hy + (lunge ? dy * 0.42 : 0);
-    if (lunge) this.add(this.sphere, body, hx, hy, 0.27, 0.29, 0.29, 0.22);
-    const skull = this.add(this.sphere, body, x, y, 0.33, 0.43, 0.36, 0.32);
-    skull.rotation.z = Math.atan2(dy, dx);
-    for (const side of [-1, 1]) {
-      const ex = x + dx * 0.17 - dy * side * 0.17;
-      const ey = y + dy * 0.17 + dx * side * 0.17;
-      this.add(this.sphere, '#edfaff', ex, ey, 0.59, 0.099, 0.099, 0.065);
-      this.add(this.sphere, '#071826', ex + dx * 0.032, ey + dy * 0.032, 0.644, 0.045, 0.045, 0.026);
-    }
-    this.add(this.sphere, accent, x - dx * 0.12, y - dy * 0.12, 0.64, 0.067, 0.067, 0.027);
+    const [x, y] = this.center(cell);
+    const mesh = new Mesh(this.spritePlane, materials[inactive ? 1 : 0]);
+    mesh.position.set(x, y, height);
+    this.pieces.add(mesh);
   }
 
   private center({ x, y }: Position) {
@@ -175,7 +161,7 @@ export class ThreeArena {
   }
 
   private add(
-    geometry: BoxGeometry | CylinderGeometry | IcosahedronGeometry | SphereGeometry | TorusGeometry,
+    geometry: BoxGeometry | TorusGeometry,
     color: string, x: number, y: number, z: number, sx: number, sy: number, sz: number,
     emissive?: string,
   ) {
