@@ -1,7 +1,8 @@
-import React, { PointerEvent as ReactPointerEvent, useEffect, useRef } from 'react';
+import React, { PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from 'react';
 import { Direction, GameSettings, GameState, Position, Snake } from '../types/game';
 import { HitstopInfo } from '../game/engine';
 import { getPlayerColorPalette } from '../game/playerColors';
+import type { ThreeArena } from './ThreeArena';
 
 const CELL_SIZE = 32;
 const RENDER_SCALE = 3;
@@ -46,11 +47,28 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   onCellDoubleClick,
   onCellContextMenu,
 }) => {
+  const [renderer, setRenderer] = useState<ThreeArena | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const pointerStartRef = useRef<{ id: number; x: number; y: number; canvasX: number; canvasY: number; time?: number; startedOnSnake?: string } | null>(null);
   const pointerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isDraggingRef = useRef<boolean>(false);
   const lastPointerTypeRef = useRef<string>('mouse');
+
+  useEffect(() => {
+    let disposed = false;
+    let arena: ThreeArena | null = null;
+    void import('./ThreeArena').then(({ ThreeArena }) => {
+      if (disposed) return;
+      arena = new ThreeArena();
+      setRenderer(arena);
+    }).catch(() => {
+      // Retain the canvas renderer when WebGL or the module is unavailable.
+    });
+    return () => {
+      disposed = true;
+      arena?.dispose();
+    };
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -68,11 +86,30 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       canvas.height = resolution;
     }
     ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);
-    renderArena(ctx, gridSize, cellSize);
+    const snakes = gameState.snakes.map(snake => {
+      const isAnimatingFatalMove = !snake.isAlive && fatalMoveAnimating.includes(snake.id);
+      const isDuringDeathHitstop = Boolean(
+        !snake.isAlive &&
+        hitstop &&
+        (hitstop.kind === 'DEATH' || hitstop.kind === 'BOSS_DEATH') &&
+        hitstop.flashCells.some(cell =>
+          (snake.body[0] && cell.x === snake.body[0].x && cell.y === snake.body[0].y) ||
+          (snake.deathPosition && cell.x === snake.deathPosition.x && cell.y === snake.deathPosition.y),
+        ),
+      );
+      const renderAsAlive = snake.isAlive || isDuringDeathHitstop || isAnimatingFatalMove;
+      return { snake, inactive: !renderAsAlive, lunge: isAnimatingFatalMove };
+    });
+    const arena = renderer?.draw(gameState, gridSize, resolution, snakes);
+    if (arena) {
+      ctx.drawImage(arena, 0, 0, boardPixelSize, boardPixelSize);
+    } else {
+      renderArena(ctx, gridSize, cellSize);
+    }
 
     // 3. Render Shrink Ring / Outer Walls (Closed in)
     const ringInset = gameState.ringInset;
-    if (ringInset > 0) {
+    if (!arena && ringInset > 0) {
       for (let x = 0; x < gridSize; x++) {
         for (let y = 0; y < gridSize; y++) {
           const isShrunkWall = x < ringInset || x >= gridSize - ringInset || y < ringInset || y >= gridSize - ringInset;
@@ -95,26 +132,28 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       }
     }
 
-    // Campaign playtest walls are permanent cells within the arena.
-    const rattleWallSet = new Set(
-      (gameState.rattleWalls ?? []).map(w => `${w.x},${w.y}`),
-    );
-    for (const wall of gameState.walls ?? []) {
-      if (rattleWallSet.has(`${wall.x},${wall.y}`)) continue;
-      renderShrunkWallCell(ctx, wall.x * cellSize, wall.y * cellSize, cellSize);
-    }
+    if (!arena) {
+      // Campaign playtest walls are permanent cells within the arena.
+      const rattleWallSet = new Set(
+        (gameState.rattleWalls ?? []).map(w => `${w.x},${w.y}`),
+      );
+      for (const wall of gameState.walls ?? []) {
+        if (rattleWallSet.has(`${wall.x},${wall.y}`)) continue;
+        renderShrunkWallCell(ctx, wall.x * cellSize, wall.y * cellSize, cellSize);
+      }
 
-    // Rattle walls use the owner’s accent when available.
-    for (const wall of gameState.rattleWalls ?? []) {
-      const owner = wall.ownerId
-        ? gameState.snakes.find(snake => snake.id === wall.ownerId)
-        : undefined;
-      renderRattleWall(ctx, wall.x * cellSize, wall.y * cellSize, cellSize, owner ? getPlayerColorPalette(owner).body : undefined);
-    }
+      // Rattle walls use the owner’s accent when available.
+      for (const wall of gameState.rattleWalls ?? []) {
+        const owner = wall.ownerId
+          ? gameState.snakes.find(snake => snake.id === wall.ownerId)
+          : undefined;
+        renderRattleWall(ctx, wall.x * cellSize, wall.y * cellSize, cellSize, owner ? getPlayerColorPalette(owner).body : undefined);
+      }
 
-    // 5. Render Tokens (Escalating Round Tokens)
-    for (const token of gameState.tokens) {
-      renderToken(ctx, token.x * cellSize, token.y * cellSize, cellSize);
+      // 5. Render Tokens (Escalating Round Tokens)
+      for (const token of gameState.tokens) {
+        renderToken(ctx, token.x * cellSize, token.y * cellSize, cellSize);
+      }
     }
 
     // 6. Render Planned Paths (Hatched pattern during planning) and Locked Paths (Solid committed shading)
@@ -219,21 +258,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       }
     }
 
-    // 7. Render Snakes
-    for (const snake of gameState.snakes) {
-      const isAnimatingFatalMove = !snake.isAlive && fatalMoveAnimating.includes(snake.id);
-      const isDuringDeathHitstop = Boolean(
-        !snake.isAlive &&
-        hitstop &&
-        (hitstop.kind === 'DEATH' || hitstop.kind === 'BOSS_DEATH') &&
-        hitstop.flashCells.some(cell =>
-          (snake.body[0] && cell.x === snake.body[0].x && cell.y === snake.body[0].y) ||
-          (snake.deathPosition && cell.x === snake.deathPosition.x && cell.y === snake.deathPosition.y),
-        ),
-      );
-      const renderAsAlive = snake.isAlive || isDuringDeathHitstop || isAnimatingFatalMove;
-      const palette = renderAsAlive ? getPlayerColorPalette(snake) : INACTIVE_SNAKE;
-      renderSnake(ctx, snake, cellSize, palette, isAnimatingFatalMove);
+    if (!arena) {
+      for (const { snake, inactive, lunge } of snakes) {
+        const palette = inactive ? INACTIVE_SNAKE : getPlayerColorPalette(snake);
+        renderSnake(ctx, snake, cellSize, palette, lunge);
+      }
     }
 
     // 8. Persistent red direction arrow on dead snake head cell for the rest of the match
@@ -318,7 +347,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     ctx.lineWidth = 1;
     ctx.strokeRect(0.5, 0.5, boardPixelSize - 1, boardPixelSize - 1);
 
-  }, [gameState, settings, lockedPaths, plannedPaths, animationsDisabled, hitstop, fatalMoveAnimating, deniedCells]);
+  }, [gameState, settings, lockedPaths, plannedPaths, animationsDisabled, hitstop, fatalMoveAnimating, deniedCells, renderer]);
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLCanvasElement>) => {
     lastPointerTypeRef.current = event.pointerType;
