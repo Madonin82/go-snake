@@ -48,6 +48,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   onCellContextMenu,
 }) => {
   const [renderer, setRenderer] = useState<ThreeArena | null>(null);
+  const webglRef = useRef<HTMLCanvasElement | null>(null);
+  const [contextLost, setContextLost] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const pointerStartRef = useRef<{ id: number; x: number; y: number; canvasX: number; canvasY: number; time?: number; startedOnSnake?: string } | null>(null);
   const pointerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -55,17 +57,25 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const lastPointerTypeRef = useRef<string>('mouse');
 
   useEffect(() => {
+    const canvas = webglRef.current;
+    if (!canvas) return;
+    const lose = () => setContextLost(true);
+    const restore = () => setContextLost(false);
+    canvas.addEventListener('webglcontextlost', lose);
+    canvas.addEventListener('webglcontextrestored', restore);
     let disposed = false;
     let arena: ThreeArena | null = null;
     void import('./ThreeArena').then(({ ThreeArena }) => {
       if (disposed) return;
-      arena = new ThreeArena();
+      arena = new ThreeArena(canvas);
       setRenderer(arena);
     }).catch(() => {
       // Retain the canvas renderer when WebGL or the module is unavailable.
     });
     return () => {
       disposed = true;
+      canvas.removeEventListener('webglcontextlost', lose);
+      canvas.removeEventListener('webglcontextrestored', restore);
       arena?.dispose();
     };
   }, []);
@@ -100,10 +110,17 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       const renderAsAlive = snake.isAlive || isDuringDeathHitstop || isAnimatingFatalMove;
       return { snake, inactive: !renderAsAlive, lunge: isAnimatingFatalMove };
     });
-    const arena = renderer?.draw(gameState, gridSize, resolution, snakes);
-    if (arena) {
-      ctx.imageSmoothingEnabled = true;
-      ctx.drawImage(arena, 0, 0, boardPixelSize, boardPixelSize);
+    const now = performance.now();
+    const reduceMotion = animationsDisabled || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const duration = reduceMotion ? 0 : gameState.turnBased ? 155 : Math.min(155, 900 / Math.max(1, settings.tickRate));
+    const arena = !contextLost && renderer?.prepare(gameState, gridSize, resolution, snakes, now, duration);
+    let animationFrame = 0;
+    if (arena && renderer) {
+      ctx.clearRect(0, 0, boardPixelSize, boardPixelSize);
+      const frame = (time: number) => {
+        if (renderer.draw(snakes, time)) animationFrame = requestAnimationFrame(frame);
+      };
+      frame(now);
     } else {
       renderArena(ctx, gridSize, cellSize);
     }
@@ -347,7 +364,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     ctx.lineWidth = 1;
     ctx.strokeRect(0.5, 0.5, boardPixelSize - 1, boardPixelSize - 1);
 
-  }, [gameState, settings, lockedPaths, plannedPaths, animationsDisabled, hitstop, fatalMoveAnimating, deniedCells, renderer]);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [gameState, settings, lockedPaths, plannedPaths, animationsDisabled, hitstop, fatalMoveAnimating, deniedCells, renderer, contextLost]);
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLCanvasElement>) => {
     lastPointerTypeRef.current = event.pointerType;
@@ -516,31 +534,38 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   return (
     <div className="match-board arena-frame relative flex items-center justify-center">
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full max-w-full aspect-square block rounded-lg"
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={() => { pointerStartRef.current = null; }}
-        onClick={(e) => {
-          if (lastPointerTypeRef.current === 'touch') return;
-          if (e.button !== 0) return;
-          const cell = getCellFromMouseEvent(e);
-          if (cell && onCellClick) onCellClick(cell, e);
-        }}
-        onDoubleClick={(e) => {
-          if (lastPointerTypeRef.current === 'touch') return;
-          if (e.button !== 0) return;
-          const cell = getCellFromMouseEvent(e);
-          if (cell && onCellDoubleClick) onCellDoubleClick(cell, e);
-        }}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          if (lastPointerTypeRef.current === 'touch') return;
-          if (onCellContextMenu) onCellContextMenu(e);
-        }}
-      />
+      <div className="relative w-full h-full overflow-hidden rounded-lg">
+        <canvas
+          ref={webglRef}
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          aria-hidden="true"
+        />
+        <canvas
+          ref={canvasRef}
+          className="relative w-full h-full max-w-full aspect-square block rounded-lg"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={() => { pointerStartRef.current = null; }}
+          onClick={(e) => {
+            if (lastPointerTypeRef.current === 'touch') return;
+            if (e.button !== 0) return;
+            const cell = getCellFromMouseEvent(e);
+            if (cell && onCellClick) onCellClick(cell, e);
+          }}
+          onDoubleClick={(e) => {
+            if (lastPointerTypeRef.current === 'touch') return;
+            if (e.button !== 0) return;
+            const cell = getCellFromMouseEvent(e);
+            if (cell && onCellDoubleClick) onCellDoubleClick(cell, e);
+          }}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            if (lastPointerTypeRef.current === 'touch') return;
+            if (onCellContextMenu) onCellContextMenu(e);
+          }}
+        />
+      </div>
     </div>
   );
 };
